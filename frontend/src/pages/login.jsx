@@ -127,7 +127,7 @@ const LoginPage = () => {
                   <Button
                     variant="body2"
                     onClick={() =>
-                      console.log("Redirigir a la página de registro")
+                      navigate('/register')
                     }
                   >
                     {"¿No tienes una cuenta? Regístrate"}

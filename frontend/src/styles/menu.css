@@ -13,3 +13,11 @@ body {
   height: 100vh;
   width: 100vw;
 }
+
+button {
+  background-color: #171F4D;
+}
+
+/* button:hover {
+  background-color: rgba(33, 150, 243, 1);
+} */

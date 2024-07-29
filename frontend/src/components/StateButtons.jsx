@@ -1,9 +1,19 @@
 import React from 'react';
 import { Button, Box } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const StateButtons = () => {
   const navigate = useNavigate();
+    const location = useLocation();
+
+
+    const getButtonStyle = (path) => {
+        if (location.pathname === path) {
+          return { backgroundColor: '#114B79' }; 
+        } else {
+          return { backgroundColor: '#2196F3' }; 
+        }
+      };
   
   return (
     <Box
@@ -13,9 +23,27 @@ const StateButtons = () => {
         gap: 2
       }}
     >
-      <Button variant="contained" onClick={() => navigate('/activos')}>ACTIVOS</Button>
-      <Button variant="contained" onClick={() => navigate('/pendientes')}>PENDIENTES</Button>
-      <Button variant="contained" onClick={() => navigate('/finalizados')}>FINALIZADOS</Button>
+        <Button
+            variant="contained"
+            sx={getButtonStyle('/activos')}
+            onClick={() => navigate('/activos')}
+        >
+            Activos
+        </Button>
+        <Button
+            variant="contained"
+            sx={getButtonStyle('/pendientes')}
+            onClick={() => navigate('/pendientes')}
+        >
+            Pendientes
+        </Button>
+        <Button
+            variant="contained"
+            sx={getButtonStyle('/finalizados')}
+            onClick={() => navigate('/finalizados')}
+        >
+            Finalizados
+        </Button>
     </Box>
   );
 };
