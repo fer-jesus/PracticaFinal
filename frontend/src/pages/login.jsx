@@ -2,6 +2,7 @@ import React from "react";
 import { useState, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import "../styles/login.css";
+import RegisterPage from './register';
 
 import {
   Container,
@@ -23,6 +24,7 @@ const LoginPage = () => {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [openRegister, setOpenRegister] = useState(false);
   const passwordRef = useRef(null);
   const navigate = useNavigate();
 
@@ -127,8 +129,7 @@ const LoginPage = () => {
                   <Button
                     variant="body2"
                     onClick={() =>
-                      navigate('/register')
-                    }
+                      navigate('/register')}
                   >
                     {"¿No tienes una cuenta? Regístrate"}
                   </Button>
