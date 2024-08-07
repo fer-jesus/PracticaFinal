@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
   Container,
   TextField,
@@ -97,9 +98,27 @@ const RegisterPage = () => {
       return;
     }
 
-    // lógica de registro
+    try {
+      const response = await axios.post("http://localhost:3000/register", {
+        nombres: formData.nombres,
+        apellidos: formData.apellidos,
+        telefono: formData.telefono,
+        email: formData.email,
+        fechaNacimiento: formData.fechaNacimiento,
+        edad: formData.edad,
+        direccion: formData.direccion,
+        rol: formData.rol,
+        nombreUsuario: formData.nombreUsuario,
+        contrasena: formData.contrasena,
+      });
 
-    navigate("/login");
+      if (response.status === 200) {
+        console.log("Usuario registrado exitosamente");
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Error al registrar usuario:", error);
+    }
   };
 
   return (

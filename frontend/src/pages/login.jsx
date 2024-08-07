@@ -1,8 +1,9 @@
 import React from "react";
 import { useState, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
+import axios from "axios";
 import "../styles/login.css";
-import RegisterPage from './register';
+//import RegisterPage from './register';
 
 import {
   Container,
@@ -24,20 +25,31 @@ const LoginPage = () => {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [openRegister, setOpenRegister] = useState(false);
+  //const [openRegister, setOpenRegister] = useState(false);
   const passwordRef = useRef(null);
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    // Datos quemados para validación
-    const staticUser = "test123";
-    const staticPassword = "pass123";
+  const handleLogin = async () => {
+    try {
+      const response = await axios.post("http://localhost:3000/login", {
+        nombreUsuario: user,
+        contrasena: password,
+      });
+      console.log('Respuesta del servidor:', response);
 
-    if (user === staticUser && password === staticPassword) {
-      console.log("Login exitoso");
-      navigate('/menu');
-    } else {
-      console.log("Credenciales incorrectas");
+      if (response.status === 200) {
+        console.log("Login exitoso");
+        navigate('/menu');
+      }
+      else {
+        console.log("Credenciales incorrectas");
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 400) {
+        console.log("Credenciales incorrectas");
+      } else {
+        console.log("Error al iniciar sesión:", error);
+      }
     }
   };
 
