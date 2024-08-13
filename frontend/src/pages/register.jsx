@@ -30,15 +30,19 @@ const RegisterPage = () => {
     confirmarContrasena: "",
   });
 
+  const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [myClass, setMyClass] = useState("");
+  // const [myClass, setMyClass] = useState("");
   const passwordRef = useRef(null);
   const confirmPasswordRef = useRef(null);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (e.target.value) {
+      setErrors((prevErrors) => ({ ...prevErrors, [e.target.name]: "" }));
+    }
   };
 
   const handleDateChange = (event) => {
@@ -90,11 +94,28 @@ const RegisterPage = () => {
     event.preventDefault();
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    Object.keys(formData).forEach((key) => {
+      if (!formData[key]) {
+        newErrors[key] = "Llena este campo";
+      }
+    });
+
+    if (formData.contrasena !== formData.confirmarContrasena) {
+      newErrors.confirmarContrasena = "Las contraseñas no coinciden";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+
   const handleRegister = async (e) => {
     e.preventDefault();
-    setMyClass("");
-    if (formData.contrasena !== formData.confirmarContrasena) {
-      setMyClass("is-invalid");
+    // setMyClass("");
+    if (!validateForm()) {
+      // setMyClass("is-invalid");
       return;
     }
 
@@ -165,6 +186,8 @@ const RegisterPage = () => {
               autoFocus
               value={formData.nombres}
               onChange={handleChange}
+              error={!!errors.nombres}
+              helperText={errors.nombres}
             />
             <TextField
               variant="outlined"
@@ -177,6 +200,8 @@ const RegisterPage = () => {
               autoComplete="apellidos"
               value={formData.apellidos}
               onChange={handleChange}
+              error={!!errors.apellidos}
+              helperText={errors.apellidos}
             />
             <TextField
               variant="outlined"
@@ -189,6 +214,8 @@ const RegisterPage = () => {
               autoComplete="telefono"
               value={formData.telefono}
               onChange={handleChange}
+              error={!!errors.telefono}
+              helperText={errors.telefono}
             />
             <TextField
               variant="outlined"
@@ -202,6 +229,8 @@ const RegisterPage = () => {
               autoComplete="email"
               value={formData.email}
               onChange={handleChange}
+              error={!!errors.email}
+              helperText={errors.email}
             />
             <TextField
               variant="outlined"
@@ -215,6 +244,8 @@ const RegisterPage = () => {
               InputLabelProps={{ shrink: true }}
               value={formData.fechaNacimiento}
               onChange={handleDateChange}
+              error={!!errors.fechaNacimiento}
+              helperText={errors.fechaNacimiento}
             />
             <TextField
               variant="outlined"
@@ -230,6 +261,8 @@ const RegisterPage = () => {
               InputProps={{
                 readOnly: true,
               }}
+              error={!!errors.edad}
+              helperText={errors.edad}
             />
             <TextField
               variant="outlined"
@@ -242,6 +275,8 @@ const RegisterPage = () => {
               autoComplete="direccion"
               value={formData.direccion}
               onChange={handleChange}
+              error={!!errors.direccion}
+              helperText={errors.direccion}
             />
             <TextField
               variant="outlined"
@@ -254,6 +289,8 @@ const RegisterPage = () => {
               autoComplete="rol"
               value={formData.rol}
               onChange={handleChange}
+              error={!!errors.rol}
+              helperText={errors.rol}
             />
             <TextField
               variant="outlined"
@@ -266,6 +303,8 @@ const RegisterPage = () => {
               autoComplete="nombreUsuario"
               value={formData.nombreUsuario}
               onChange={handleChange}
+              error={!!errors.nombreUsuario}
+              helperText={errors.nombreUsuario}
             />
             <TextField
               variant="outlined"
@@ -293,6 +332,8 @@ const RegisterPage = () => {
                   </InputAdornment>
                 ),
               }}
+              error={!!errors.contrasena}
+              helperText={errors.contrasena}
             />
             <TextField
               variant="outlined"
@@ -320,7 +361,9 @@ const RegisterPage = () => {
                   </InputAdornment>
                 ),
               }}
-              className={myClass}
+              error={!!errors.confirmarContrasena}
+              helperText={errors.confirmarContrasena}
+              // className={myClass}
             />
             <Button
               type="submit"

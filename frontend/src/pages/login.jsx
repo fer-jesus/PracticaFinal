@@ -1,10 +1,7 @@
-import React from "react";
-import { useState, useRef } from "react";
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../styles/login.css";
-//import RegisterPage from './register';
-
 import {
   Container,
   TextField,
@@ -25,28 +22,34 @@ const LoginPage = () => {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  //const [openRegister, setOpenRegister] = useState(false);
+  const [errorUser, setErrorUser] = useState(false);
+  const [errorPassword, setErrorPassword] = useState(false);
   const passwordRef = useRef(null);
   const navigate = useNavigate();
 
   const handleLogin = async () => {
+    // Validar si el  usuario o contraseña con correctos
+    if (user.trim() === "" || password.trim() === "") {
+      setErrorUser(user.trim() === "");
+      setErrorPassword(password.trim() === "");
+      return;
+    }
+
     try {
       const response = await axios.post("http://localhost:3000/login", {
         nombreUsuario: user,
         contrasena: password,
       });
-      console.log('Respuesta del servidor:', response);
 
       if (response.status === 200) {
         console.log("Login exitoso");
         navigate('/menu');
       }
-      else {
-        console.log("Credenciales incorrectas");
-      }
     } catch (error) {
       if (error.response && error.response.status === 400) {
-        console.log("Credenciales incorrectas");
+        alert("Usuario o contraseña incorrectos");
+        setUser("");
+        setPassword("");
       } else {
         console.log("Error al iniciar sesión:", error);
       }
@@ -97,7 +100,12 @@ const LoginPage = () => {
                 autoComplete="user"
                 autoFocus
                 value={user}
-                onChange={(e) => setUser(e.target.value)}
+                onChange={(e) => {
+                  setUser(e.target.value);
+                  setErrorUser(false);
+                }}
+                error={errorUser}
+                helperText={errorUser ? "Este campo no puede estar vacío" : ""}            
               />
               <TextField
                 variant="outlined"
@@ -110,8 +118,13 @@ const LoginPage = () => {
                 id="password"
                 autoComplete="current-password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setErrorPassword(false);
+                }}
                 inputRef={passwordRef}
+                error={errorPassword}
+                helperText={errorPassword ? "Este campo no puede estar vacío" : ""}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -140,8 +153,7 @@ const LoginPage = () => {
                 <Grid item>
                   <Button
                     variant="body2"
-                    onClick={() =>
-                      navigate('/register')}
+                    onClick={() => navigate('/register')}
                   >
                     {"¿No tienes una cuenta? Regístrate"}
                   </Button>
