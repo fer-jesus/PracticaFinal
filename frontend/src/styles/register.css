@@ -5,7 +5,7 @@
     justify-content: center;
     align-items: center;
     overflow: auto;
-    background-color: #171F4D;
+     /* background: #297A72; */
+    background: linear-gradient(135deg, #297A72 0%, #63B4AC 75%);
+    background-size: cover;
   }
-  
-  

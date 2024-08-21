@@ -3,7 +3,7 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  /* background-color: #171F4D; */
+  /* background-color: #297A72 */
 }
 
 .menu-container {
@@ -12,6 +12,7 @@ body {
   align-items: center;
   height: 100vh;
   width: 100vw;
+  background-color: #297A72
 }
 
 button {

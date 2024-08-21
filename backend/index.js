@@ -3,6 +3,8 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt'); // Importa bcrypt para el hash de contraseñas
 const db = require('./database'); // Importa la configuración de la base de datos
+const fs = require('fs'); // Importa el módulo fs para el manejo del sistema de archivos
+const path = require('path'); // Importa el módulo path para manejar rutas de archivos
 
 const app = express();
 const PORT = 3000;
@@ -64,6 +66,29 @@ app.post('/login', (req, res) => {
     res.status(200).json({ message: 'Inicio de sesión exitoso' });
   });
 });
+
+// Ruta para crear una nueva carpeta en la ruta especificada
+app.post('/create-folder', (req, res) => {
+  const { folderName } = req.body;
+
+  const folderPath = path.join('C:\\Users\\JFGL\\Desktop\\Expedientes\\Activos', folderName);
+
+  // Verifica si la carpeta ya existe
+  if (fs.existsSync(folderPath)) {
+    return res.status(400).json({ error: 'La carpeta ya existe' });
+  }
+  
+// Crea la carpeta
+  fs.mkdir(folderPath, (err) => {
+    if (err) {
+      console.error('Error al crear la carpeta:', err);
+      return res.status(500).json({ error: 'Error al crear la carpeta' });
+    }
+
+    res.status(200).json({ message: 'Carpeta creada exitosamente' });
+  });
+});
+
 
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);

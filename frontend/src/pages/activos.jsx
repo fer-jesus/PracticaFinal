@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Container,
   Box,
@@ -12,107 +12,229 @@ import {
   Paper,
   ButtonGroup,
   Button,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
+import {
+  Visibility,
+  CompareArrows,
+  Scanner,
+  Search,
+} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import StateButtons from "../components/StateButtons";
 import "../styles/estados.css";
 
 const ActivosPage = () => {
-  const navigate = useNavigate(); // Inicializa useNavigate
+  const navigate = useNavigate();
+  const [folders, setFolders] = useState([]);
+  const [newFolderName, setNewFolderName] = useState("");
+  const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(""); // Estado para la búsqueda
 
   const handleLogout = () => {
-    // limpiar cualquier dato almacenado en localStorage o en el estado global
-    navigate("/login"); // Redirige a la página de login
+    navigate("/login");
   };
 
-  // Datos quemados
-  const data = [
-    {
-      expediente: "001",
-      fecha: "2024-07-31",
-      descripcion: "Descripción del expediente 001",
-    },
-    {
-      expediente: "002",
-      fecha: "2024-08-01",
-      descripcion: "Descripción del expediente 002",
-    },
-    {
-      expediente: "003",
-      fecha: "2024-08-02",
-      descripcion: "Descripción del expediente 003",
-    },
-    {
-      expediente: "004",
-      fecha: "2024-07-31",
-      descripcion: "Descripción del expediente 004",
-    },
-    {
-      expediente: "005",
-      fecha: "2024-08-01",
-      descripcion: "Descripción del expediente 005",
-    },
-  ];
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setNewFolderName("");
+  };
+
+  const handleCreateFolder = () => {
+    axios
+      .post("http://localhost:3000/create-folder", {
+        folderName: newFolderName,
+      })
+      .then((response) => {
+        setFolders([
+          ...folders,
+          {
+            expediente: newFolderName,
+            fecha: new Date().toISOString().split("T")[0],
+            descripcion: "Nueva carpeta",
+          },
+        ]);
+        handleClose();
+      })
+      .catch((error) => {
+        console.error("Error al crear la carpeta:", error);
+        alert("Error al crear la carpeta");
+      });
+  };
+
+  const handleVisualizar = (expediente) => {
+    console.log("Visualizar expediente:", expediente);
+  };
+
+  const handleCambiarEstado = (expediente) => {
+    console.log("Cambiar estado de:", expediente);
+  };
+
+  const handleEscanear = (expediente) => {
+    console.log("Escanear expediente:", expediente);
+  };
+
+  // Filtrado de los expedientes basado en la búsqueda
+  const filteredFolders = folders.filter((folder) =>
+    folder.expediente.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="activo-container">
-      <Container>
+      <Container sx={{ paddingTop: 4 }}>
         <Box
           sx={{
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
-            height: "100vh",
-            // position: "relative",
           }}
         >
           <Button
             variant="contained"
             color="secondary"
             onClick={handleLogout}
-            sx={{ position: "absolute", top: 0, left: 0, margin: 2 }}
+            sx={{ position: "absolute", top: 0, left: 45, margin: 4 }}
           >
             Cerrar Sesión
           </Button>
-
-          <Typography variant="h4" sx={{ marginBottom: 2 }}>
-            Activos
-          </Typography>
-          <StateButtons />
-
-          <TableContainer component={Paper} sx={{ marginTop: 2 }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Expediente</TableCell>
-                  <TableCell>Fecha</TableCell>
-                  <TableCell>Descripción</TableCell>
-                  <TableCell>Acciones</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {data.map((row, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{row.expediente}</TableCell>
-                    <TableCell>{row.fecha}</TableCell>
-                    <TableCell>{row.descripcion}</TableCell>
-                    <TableCell>
-                      <ButtonGroup
-                        variant="contained"
-                        aria-label="outlined primary button group"
-                      >
-                        <Button>Acción 1</Button>
-                        <Button>Acción 2</Button>
-                        <Button>Acción 3</Button>
-                      </ButtonGroup>
-                    </TableCell>
+          <Box
+            sx={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 2,
+            }}
+          >
+            <Typography variant="h4" sx={{ marginBottom: 2 }}>
+              Activos
+            </Typography>
+            <TextField
+              label="Buscar Expediente"
+              variant="outlined"
+              size="small"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              sx={{
+                width: "250px",
+                backgroundColor: "#F5F5F5",
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search />
+                  </InputAdornment>
+                ),
+              }}
+              InputLabelProps={{
+                shrink: Boolean(searchQuery),
+                style: { marginLeft: "30px" },
+              }}
+            />
+          </Box>
+          <StateButtons
+            buttonSize="medium"
+            buttonStyle={{
+              fontSize: "0.875rem",
+              padding: "6px 16px",
+              minWidth: "100px",
+            }}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleClickOpen}
+            sx={{ alignSelf: "flex-end", marginBottom: 2 }}
+          >
+            Nuevo
+          </Button>
+          <Box
+            sx={{
+              width: "100%",
+              height: "50vh",
+              overflowY: "auto",
+              marginTop: 2,
+            }}
+          >
+            <TableContainer component={Paper} sx={{ height: "100%" }}>
+              <Table stickyHeader>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ width: "25%" }}>Expediente</TableCell>
+                    <TableCell sx={{ width: "20%" }}>Fecha</TableCell>
+                    <TableCell sx={{ width: "35%" }}>Descripción</TableCell>
+                    <TableCell sx={{ width: "15%" }}>Acciones</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {filteredFolders.map((row, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{row.expediente}</TableCell>
+                      <TableCell>{row.fecha}</TableCell>
+                      <TableCell>{row.descripcion}</TableCell>
+                      <TableCell>
+                        <ButtonGroup variant="contained">
+                          <IconButton
+                            onClick={() => handleVisualizar(row.expediente)}
+                          >
+                            <Visibility />
+                          </IconButton>
+                          <IconButton
+                            onClick={() => handleCambiarEstado(row.expediente)}
+                          >
+                            <CompareArrows />
+                          </IconButton>
+                          <IconButton
+                            onClick={() => handleEscanear(row.expediente)}
+                          >
+                            <Scanner />
+                          </IconButton>
+                        </ButtonGroup>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
         </Box>
+        <Dialog open={open} onClose={handleClose}>
+          <DialogTitle>Crear nueva carpeta</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Introduce el nombre de la nueva carpeta
+            </DialogContentText>
+            <TextField
+              autoFocus
+              margin="dense"
+              label="Nombre de la carpeta"
+              fullWidth
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="primary">
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateFolder} color="primary">
+              Crear
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Container>
     </div>
   );

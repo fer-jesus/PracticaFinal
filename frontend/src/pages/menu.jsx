@@ -30,13 +30,15 @@ const MenuPage = () => {
             variant="contained"
             color="secondary"
             onClick={handleLogout}
-            sx={{ position: 'absolute', top: 0, left: 0, margin: 2 }}
+            sx={{ position: 'absolute', top: 0, left: 45, margin: 4 }}
           >
             Cerrar Sesión
-          </Button>
+          </Button> 
 
           <Typography variant="h3" sx={{ marginBottom: 2 }}>Elija el estado</Typography>
-          <StateButtons />
+          <StateButtons buttonSize="large" 
+          buttonStyle={{ padding: '16px 32px', fontSize: '1.9rem', minWidth: '200px' }}
+          />
         </Box>
       </Container>
     </div>

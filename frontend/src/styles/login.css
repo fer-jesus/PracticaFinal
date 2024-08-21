@@ -12,5 +12,8 @@ html, body {
   align-items: center;     
   height: 100vh; 
   width: 100vw;   
-  background-color: #171F4D;
+  /* background: #297A72; */
+  background: linear-gradient(135deg, #297A72  0%, #63B4AC 75%); 
+  background-size: cover;
+  
 }
