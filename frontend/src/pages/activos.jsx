@@ -38,6 +38,7 @@ const ActivosPage = () => {
   const [newFolderName, setNewFolderName] = useState("");
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(""); // Estado para la búsqueda
+  
 
   const handleLogout = () => {
     navigate("/login");
@@ -52,26 +53,41 @@ const ActivosPage = () => {
     setNewFolderName("");
   };
 
-  const handleCreateFolder = () => {
-    axios
-      .post("http://localhost:3000/create-folder", {
-        folderName: newFolderName,
-      })
-      .then((response) => {
-        setFolders([
-          ...folders,
-          {
-            expediente: newFolderName,
-            fecha: new Date().toISOString().split("T")[0],
-            descripcion: "Nueva carpeta",
-          },
-        ]);
-        handleClose();
-      })
-      .catch((error) => {
-        console.error("Error al crear la carpeta:", error);
-        alert("Error al crear la carpeta");
+  const handleCreateFolder = async () => {
+    try {
+      // Mostrar el diálogo de selección de directorios
+      const directoryHandle = await window.showDirectoryPicker();
+      // Crear la nueva carpeta en el directorio seleccionado
+      const newFolderHandle = await directoryHandle.getDirectoryHandle(
+        newFolderName,
+        { create: true }
+      );
+
+      // Aquí podrías realizar alguna acción adicional si es necesario
+      console.log("Nueva carpeta creada en:", newFolderHandle);
+
+      // Agregar la nueva carpeta a la lista de folders
+      setFolders([
+        ...folders,
+        {
+          expediente: newFolderName,
+          fecha: new Date().toISOString().split("T")[0],
+          descripcion: "Nueva carpeta",
+        },
+      ]);
+
+      // Registrar la nueva carpeta en la base de datos
+      await axios.post("http://localhost:3000/register-folder", {
+        expediente: newFolderName,
+        fecha: new Date().toISOString().split("T")[0],
+        descripcion: "Nueva carpeta",
       });
+
+      handleClose();
+    } catch (error) {
+      console.error("Error al crear la carpeta:", error);
+      alert("Error al crear la carpeta");
+    }
   };
 
   const handleVisualizar = (expediente) => {
@@ -215,7 +231,7 @@ const ActivosPage = () => {
           <DialogTitle>Crear nueva carpeta</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Introduce el nombre de la nueva carpeta
+              Introduce el nombre de la nueva carpeta y selecciona la ubicación donde deseas guardarla.
             </DialogContentText>
             <TextField
               autoFocus
@@ -225,12 +241,16 @@ const ActivosPage = () => {
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
             />
+            
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose} color="primary">
               Cancelar
             </Button>
-            <Button onClick={handleCreateFolder} color="primary">
+            <Button onClick={handleCreateFolder} 
+            color="primary"
+            disabled={!newFolderName} // Deshabilitar si no se selecciona una ruta o nombre
+            >
               Crear
             </Button>
           </DialogActions>

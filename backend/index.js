@@ -67,25 +67,21 @@ app.post('/login', (req, res) => {
   });
 });
 
-// Ruta para crear una nueva carpeta en la ruta especificada
-app.post('/create-folder', (req, res) => {
-  const { folderName } = req.body;
+// Ruta para registrar una nueva carpeta en la base de datos
+app.post('/register-folder', (req, res) => {
+  const { expediente, fecha, descripcion } = req.body;
 
-  const folderPath = path.join('C:\\Users\\JFGL\\Desktop\\Expedientes\\Activos', folderName);
+  const query = `
+    INSERT INTO CARPETA (Nombre_expediente, Fecha_creación, Descripción)
+    VALUES (?, ?, ?)
+  `;
 
-  // Verifica si la carpeta ya existe
-  if (fs.existsSync(folderPath)) {
-    return res.status(400).json({ error: 'La carpeta ya existe' });
-  }
-  
-// Crea la carpeta
-  fs.mkdir(folderPath, (err) => {
+  db.query(query, [expediente, fecha, descripcion], (err, results) => {
     if (err) {
-      console.error('Error al crear la carpeta:', err);
-      return res.status(500).json({ error: 'Error al crear la carpeta' });
+      console.error('Error al registrar la carpeta:', err);
+      return res.status(500).json({ error: 'Error al registrar la carpeta' });
     }
-
-    res.status(200).json({ message: 'Carpeta creada exitosamente' });
+    res.status(200).json({ message: 'Carpeta registrada exitosamente' });
   });
 });
 
