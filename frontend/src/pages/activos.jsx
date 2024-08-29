@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Box,
@@ -11,15 +11,15 @@ import {
   TableRow,
   Paper,
   ButtonGroup,
-  Button,
+  IconButton,
   TextField,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  IconButton,
   InputAdornment,
+  Button,
 } from "@mui/material";
 import {
   Visibility,
@@ -28,7 +28,6 @@ import {
   Search,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import StateButtons from "../components/StateButtons";
 import "../styles/estados.css";
 
@@ -38,7 +37,41 @@ const ActivosPage = () => {
   const [newFolderName, setNewFolderName] = useState("");
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(""); // Estado para la búsqueda
-  
+  const [openVisualizar, setOpenVisualizar] = useState(false); // Estado para el modal de visualización
+  const [selectedFolder, setSelectedFolder] = useState(null); // Estado para la carpeta seleccionada
+  const [folderFiles, setFolderFiles] = useState([]); // Archivos de la carpeta seleccionada
+
+  useEffect(() => {
+    // Función para obtener la lista de carpetas desde la base de datos
+    const fetchFolders = async () => {
+      try {
+        // API para obtener el directorio raíz del sistema de archivos
+        const directoryHandle = await window.showDirectoryPicker();
+        const folders = [];
+
+        // Leer cada carpeta en el directorio raíz
+        for await (const [name, handle] of directoryHandle) {
+          if (handle.kind === "directory") {
+            // Agregar la carpeta a la lista de folders
+            folders.push({
+              expediente: name,
+              fecha: new Date().toISOString().split("T")[0],
+              descripcion: "Nueva carpeta",
+              handle,
+            });
+          }
+        }
+
+        setFolders(folders);
+      } catch (error) {
+        console.error("Error al obtener las carpetas:", error);
+        alert("Error al obtener las carpetas.");
+      }
+    };
+
+    fetchFolders();
+    
+  }, []);
 
   const handleLogout = () => {
     navigate("/login");
@@ -55,16 +88,13 @@ const ActivosPage = () => {
 
   const handleCreateFolder = async () => {
     try {
-      // Mostrar el diálogo de selección de directorios
+      // API que ayuda a mostrar el diálogo de selección de directorios
       const directoryHandle = await window.showDirectoryPicker();
-      // Crear la nueva carpeta en el directorio seleccionado
+      // Crea la nueva carpeta en el directorio seleccionado
       const newFolderHandle = await directoryHandle.getDirectoryHandle(
         newFolderName,
         { create: true }
       );
-
-      // Aquí podrías realizar alguna acción adicional si es necesario
-      console.log("Nueva carpeta creada en:", newFolderHandle);
 
       // Agregar la nueva carpeta a la lista de folders
       setFolders([
@@ -73,15 +103,9 @@ const ActivosPage = () => {
           expediente: newFolderName,
           fecha: new Date().toISOString().split("T")[0],
           descripcion: "Nueva carpeta",
+          handle: newFolderHandle,
         },
       ]);
-
-      // Registrar la nueva carpeta en la base de datos
-      await axios.post("http://localhost:3000/register-folder", {
-        expediente: newFolderName,
-        fecha: new Date().toISOString().split("T")[0],
-        descripcion: "Nueva carpeta",
-      });
 
       handleClose();
     } catch (error) {
@@ -90,13 +114,109 @@ const ActivosPage = () => {
     }
   };
 
-  const handleVisualizar = (expediente) => {
-    console.log("Visualizar expediente:", expediente);
+  const handleVisualizar = async (folder) => {
+    if (!folder.handle) return;
+
+    try {
+      const files = [];
+      for await (const [name, handle] of folder.handle) {
+        if (handle.kind === "file") {
+          files.push({ name, handle });
+        }
+      }
+      setSelectedFolder(folder);
+      setFolderFiles(files);
+      setOpenVisualizar(true);
+    } catch (error) {
+      console.error("Error al leer los archivos de la carpeta:", error);
+      alert("Error al leer los archivos del expediente.");
+    }
   };
 
-  const handleCambiarEstado = (expediente) => {
-    console.log("Cambiar estado de:", expediente);
+  const handleOpenFile = async (fileHandle) => {
+    try {
+      const file = await fileHandle.getFile();
+      const url = URL.createObjectURL(file);
+      window.open(url, "_blank");
+    } catch (error) {
+      console.error("Error al abrir el archivo:", error);
+      alert("Error al abrir el archivo.");
+    }
   };
+
+  const handleCloseVisualizar = () => {
+    setOpenVisualizar(false);
+    setSelectedFolder(null);
+    setFolderFiles([]);
+  };
+
+  const handleCambiarEstado = async (expediente) => {
+    try {
+      // Seleccionar la carpeta de destino
+      const newDirectoryHandle = await window.showDirectoryPicker();
+  
+      // Obtener el nombre de la carpeta a mover
+      const folderName = expediente.handle.name;
+  
+      // Mover la carpeta completa
+      await moveDirectory(expediente.handle, newDirectoryHandle, folderName);
+
+      // Actualizar la lista de carpetas eliminando la carpeta movida
+      setFolders((prevFolders) =>
+        prevFolders.filter((folder) => folder.expediente !== expediente.expediente)
+      );
+  
+      alert(`Expediente '${expediente.expediente}' movido exitosamente.`);
+    } catch (error) {
+      console.error("Error al mover el expediente:", error);
+      alert(`Error al mover el expediente: ${error.message}`);
+    }
+  };
+  
+  // Función para mover una carpeta completa
+  const moveDirectory = async (sourceDirHandle, targetDirHandle, folderName) => {
+    // Crear un nuevo directorio en el destino
+    const newDirHandle = await targetDirHandle.getDirectoryHandle(folderName, {
+      create: true,
+    });
+  
+    // Mover cada archivo o subdirectorio dentro de la carpeta
+    for await (const [name, handle] of sourceDirHandle) {
+      if (handle.kind === "file") {
+        await moveFile(handle, newDirHandle, name);
+      } else if (handle.kind === "directory") {
+        await moveDirectory(handle, newDirHandle, name);
+      }
+    }
+  
+    // Eliminar la carpeta original después de mover su contenido
+    await deleteDirectoryContents(sourceDirHandle);
+  };
+  
+  // Función para mover un archivo
+  const moveFile = async (fileHandle, targetDirHandle, fileName) => {
+    const file = await fileHandle.getFile();
+    const newFileHandle = await targetDirHandle.getFileHandle(fileName, {
+      create: true,
+    });
+    const writable = await newFileHandle.createWritable();
+    await writable.write(file);
+    await writable.close();
+  };
+  
+  // Función para eliminar el contenido de un directorio (sin eliminar la carpeta raíz)
+  const deleteDirectoryContents = async (dirHandle) => {
+    for await (const [name, handle] of dirHandle) {
+      if (handle.kind === "file") {
+        await dirHandle.removeEntry(name);
+      } else if (handle.kind === "directory") {
+        await deleteDirectoryContents(handle);
+        await dirHandle.removeEntry(name);
+      }
+    }
+  };
+  
+  
 
   const handleEscanear = (expediente) => {
     console.log("Escanear expediente:", expediente);
@@ -104,7 +224,7 @@ const ActivosPage = () => {
 
   // Filtrado de los expedientes basado en la búsqueda
   const filteredFolders = folders.filter((folder) =>
-    folder.expediente.toLowerCase().includes(searchQuery.toLowerCase())
+    folder.expediente?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -204,12 +324,12 @@ const ActivosPage = () => {
                       <TableCell>
                         <ButtonGroup variant="contained">
                           <IconButton
-                            onClick={() => handleVisualizar(row.expediente)}
+                            onClick={() => handleVisualizar(row)}
                           >
                             <Visibility />
                           </IconButton>
                           <IconButton
-                            onClick={() => handleCambiarEstado(row.expediente)}
+                            onClick={() => handleCambiarEstado(row)}
                           >
                             <CompareArrows />
                           </IconButton>
@@ -241,17 +361,54 @@ const ActivosPage = () => {
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
             />
-            
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose} color="primary">
               Cancelar
             </Button>
-            <Button onClick={handleCreateFolder} 
-            color="primary"
-            disabled={!newFolderName} // Deshabilitar si no se selecciona una ruta o nombre
+            <Button
+              onClick={handleCreateFolder}
+              color="primary"
+              disabled={!newFolderName} // Deshabilitar si no se selecciona una ruta o nombre
             >
               Crear
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog open={openVisualizar} onClose={handleCloseVisualizar} maxWidth="sm" fullWidth>
+          <DialogTitle>Expediente: {selectedFolder?.expediente}</DialogTitle>
+          <DialogContent>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    {/* <TableCell>Nombre del Archivo</TableCell>
+                    <TableCell>Acciones</TableCell> */}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {folderFiles.map((file, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{file.name}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => handleOpenFile(file.handle)}
+                        >
+                          Abrir
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseVisualizar} color="primary">
+              Cerrar
             </Button>
           </DialogActions>
         </Dialog>
