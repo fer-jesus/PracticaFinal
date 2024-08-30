@@ -28,6 +28,7 @@ import {
   Search,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import StateButtons from "../components/StateButtons";
 import "../styles/estados.css";
 
@@ -95,6 +96,15 @@ const ActivosPage = () => {
         newFolderName,
         { create: true }
       );
+
+      // Registrar la nueva carpeta en la base de datos
+      await axios.post("http://localhost:3000/register-folder", {
+        expediente: newFolderName,
+        fecha: new Date().toISOString().split("T")[0],
+        descripcion: "Nueva carpeta",
+        ruta: newFolderHandle.name, // Almacena la ruta de la carpeta
+      });
+
 
       // Agregar la nueva carpeta a la lista de folders
       setFolders([
