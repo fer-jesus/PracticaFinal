@@ -42,38 +42,7 @@ const ActivosPage = () => {
   const [selectedFolder, setSelectedFolder] = useState(null); // Estado para la carpeta seleccionada
   const [folderFiles, setFolderFiles] = useState([]); // Archivos de la carpeta seleccionada
 
-  useEffect(() => {
-    // Función para obtener la lista de carpetas desde la base de datos
-    const fetchFolders = async () => {
-      try {
-        // API para obtener el directorio raíz del sistema de archivos
-        const directoryHandle = await window.showDirectoryPicker();
-        const folders = [];
-
-        // Leer cada carpeta en el directorio raíz
-        for await (const [name, handle] of directoryHandle) {
-          if (handle.kind === "directory") {
-            // Agregar la carpeta a la lista de folders
-            folders.push({
-              expediente: name,
-              fecha: new Date().toISOString().split("T")[0],
-              descripcion: "Nueva carpeta",
-              handle,
-            });
-          }
-        }
-
-        setFolders(folders);
-      } catch (error) {
-        console.error("Error al obtener las carpetas:", error);
-        alert("Error al obtener las carpetas.");
-      }
-    };
-
-    fetchFolders();
-    
-  }, []);
-
+  
   const handleLogout = () => {
     navigate("/login");
   };
@@ -97,16 +66,7 @@ const ActivosPage = () => {
         { create: true }
       );
 
-      // Registrar la nueva carpeta en la base de datos
-      await axios.post("http://localhost:3000/register-folder", {
-        expediente: newFolderName,
-        fecha: new Date().toISOString().split("T")[0],
-        descripcion: "Nueva carpeta",
-        ruta: newFolderHandle.name, // Almacena la ruta de la carpeta
-      });
-
-
-      // Agregar la nueva carpeta a la lista de folders
+      // Agrega la nueva carpeta a la lista de folders
       setFolders([
         ...folders,
         {
@@ -116,6 +76,14 @@ const ActivosPage = () => {
           handle: newFolderHandle,
         },
       ]);
+
+      // Registrar la nueva carpeta en la base de datos
+      await axios.post("http://localhost:3000/register-folder", {
+        expediente: newFolderName,
+        fecha: new Date().toISOString().split("T")[0],
+        descripcion: "Nueva carpeta",
+        ruta: newFolderHandle.name, // Almacena la ruta de la carpeta
+      });
 
       handleClose();
     } catch (error) {
@@ -160,74 +128,11 @@ const ActivosPage = () => {
     setFolderFiles([]);
   };
 
-  const handleCambiarEstado = async (expediente) => {
-    try {
-      // Seleccionar la carpeta de destino
-      const newDirectoryHandle = await window.showDirectoryPicker();
-  
-      // Obtener el nombre de la carpeta a mover
-      const folderName = expediente.handle.name;
-  
-      // Mover la carpeta completa
-      await moveDirectory(expediente.handle, newDirectoryHandle, folderName);
+  const handleCambiarEstado = (expediente) => {
+    console.log("Cambiar estado de:", expediente);
 
-      // Actualizar la lista de carpetas eliminando la carpeta movida
-      setFolders((prevFolders) =>
-        prevFolders.filter((folder) => folder.expediente !== expediente.expediente)
-      );
-  
-      alert(`Expediente '${expediente.expediente}' movido exitosamente.`);
-    } catch (error) {
-      console.error("Error al mover el expediente:", error);
-      alert(`Error al mover el expediente: ${error.message}`);
-    }
   };
   
-  // Función para mover una carpeta completa
-  const moveDirectory = async (sourceDirHandle, targetDirHandle, folderName) => {
-    // Crear un nuevo directorio en el destino
-    const newDirHandle = await targetDirHandle.getDirectoryHandle(folderName, {
-      create: true,
-    });
-  
-    // Mover cada archivo o subdirectorio dentro de la carpeta
-    for await (const [name, handle] of sourceDirHandle) {
-      if (handle.kind === "file") {
-        await moveFile(handle, newDirHandle, name);
-      } else if (handle.kind === "directory") {
-        await moveDirectory(handle, newDirHandle, name);
-      }
-    }
-  
-    // Eliminar la carpeta original después de mover su contenido
-    await deleteDirectoryContents(sourceDirHandle);
-  };
-  
-  // Función para mover un archivo
-  const moveFile = async (fileHandle, targetDirHandle, fileName) => {
-    const file = await fileHandle.getFile();
-    const newFileHandle = await targetDirHandle.getFileHandle(fileName, {
-      create: true,
-    });
-    const writable = await newFileHandle.createWritable();
-    await writable.write(file);
-    await writable.close();
-  };
-  
-  // Función para eliminar el contenido de un directorio (sin eliminar la carpeta raíz)
-  const deleteDirectoryContents = async (dirHandle) => {
-    for await (const [name, handle] of dirHandle) {
-      if (handle.kind === "file") {
-        await dirHandle.removeEntry(name);
-      } else if (handle.kind === "directory") {
-        await deleteDirectoryContents(handle);
-        await dirHandle.removeEntry(name);
-      }
-    }
-  };
-  
-  
-
   const handleEscanear = (expediente) => {
     console.log("Escanear expediente:", expediente);
   };
@@ -339,7 +244,7 @@ const ActivosPage = () => {
                             <Visibility />
                           </IconButton>
                           <IconButton
-                            onClick={() => handleCambiarEstado(row)}
+                            onClick={() => handleCambiarEstado(row.expediente)}
                           >
                             <CompareArrows />
                           </IconButton>
