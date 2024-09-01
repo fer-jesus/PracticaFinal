@@ -266,7 +266,7 @@ const ActivosPage = () => {
           <DialogTitle>Crear nueva carpeta</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Introduce el nombre de la nueva carpeta y selecciona la ubicación donde deseas guardarla.
+              Introduce el nombre de carpeta y selecciona la ubicación donde deseas guardarla
             </DialogContentText>
             <TextField
               autoFocus
