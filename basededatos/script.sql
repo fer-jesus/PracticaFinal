@@ -20,7 +20,9 @@ CREATE TABLE CARPETA (
     Id_carpeta INT AUTO_INCREMENT PRIMARY KEY,
     Nombre_expediente VARCHAR(40) NOT NULL,
     Fecha_creación TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    Descripción VARCHAR(40)
+    Descripción VARCHAR(40),
+    Ruta_expediente VARCHAR(255) NOT NULL
+
       );
  
 CREATE TABLE ESTADO (

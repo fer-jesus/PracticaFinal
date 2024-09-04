@@ -69,19 +69,32 @@ app.post('/login', (req, res) => {
 
 // Ruta para registrar una nueva carpeta en la base de datos
 app.post('/register-folder', (req, res) => {
-  const { expediente, fecha, descripcion } = req.body;
+  const { expediente, fecha, descripcion, ruta } = req.body;
 
   const query = `
-    INSERT INTO CARPETA (Nombre_expediente, Fecha_creación, Descripción)
-    VALUES (?, ?, ?)
+    INSERT INTO CARPETA (Nombre_expediente, Fecha_creación, Descripción, Ruta_expediente)
+    VALUES (?, ?, ?, ?)
   `;
 
-  db.query(query, [expediente, fecha, descripcion], (err, results) => {
+  db.query(query, [expediente, fecha, descripcion, ruta], (err, results) => {
     if (err) {
       console.error('Error al registrar la carpeta:', err);
       return res.status(500).json({ error: 'Error al registrar la carpeta' });
     }
     res.status(200).json({ message: 'Carpeta registrada exitosamente' });
+  });
+});
+
+// Ruta para obtener todas las carpetas
+app.get('/get-folders', (req, res) => {
+  const query = 'SELECT * FROM CARPETA';
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Error al obtener las carpetas:', err);
+      return res.status(500).json({ error: 'Error al obtener las carpetas' });
+    }
+    res.status(200).json(results);
   });
 });
 
