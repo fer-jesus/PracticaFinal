@@ -205,7 +205,7 @@ const ActivosPage = () => {
     folder.Nombre_expediente?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Define columns for DataTable
+  // Define columns for DataTable component 
   const columns = [
     {
       name: "Expediente",
