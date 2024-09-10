@@ -21,7 +21,7 @@ CREATE TABLE CARPETA (
     Nombre_expediente VARCHAR(40) NOT NULL,
     Fecha_creación TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     Descripción VARCHAR(40),
-    Ruta_expediente VARCHAR(255) NOT NULL
+    RutaExpediente VARCHAR(255) UNIQUE NOT NULL
 
       );
  

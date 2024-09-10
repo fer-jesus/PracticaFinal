@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Container,
   Box,
@@ -23,12 +23,19 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import StateButtons from "../components/StateButtons";
+import axios from "axios";
 import "../styles/estados.css";
 
 const PendientesPage = () => {
   const navigate = useNavigate(); // Inicializa useNavigate
    const [folders, setFolders] = useState([]); // Estado para las carpetas
   const [searchQuery, setSearchQuery] = useState(""); // Estado para la búsqueda
+
+  useEffect(() => {
+    axios.get('http://localhost:3000/folders/PENDIENTES')
+      .then(response => setFolders(response.data))
+      .catch(error => console.error('Error al obtener carpetas:', error));
+  }, []);
 
   const handleLogout = () => {
     //limpiar cualquier dato almacenado en localStorage o en el estado global
@@ -42,6 +49,8 @@ const PendientesPage = () => {
   const handleCambiarEstado = (expediente) => {
     console.log("Cambiar estado de:", expediente);
   };
+
+  
 
   const filteredFolders = folders.filter((folder) =>
     folder.expediente.toLowerCase().includes(searchQuery.toLowerCase())

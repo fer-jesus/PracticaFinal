@@ -8,6 +8,7 @@ const path = require('path'); // Importa el módulo path para manejar rutas de a
 
 const app = express();
 const PORT = 3000;
+var pathFrontend = "";
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -67,19 +68,19 @@ app.post('/login', (req, res) => {
   });
 });
 
-// Ruta para registrar una nueva carpeta en la base de datos
+//Ruta para registrar una nueva carpeta en la base de datos
 app.post('/register-folder', (req, res) => {
   const { expediente, fecha, descripcion, ruta } = req.body;
 
   const query = `
-    INSERT INTO CARPETA (Nombre_expediente, Fecha_creación, Descripción, Ruta_expediente)
+    INSERT INTO CARPETA (Nombre_expediente, Fecha_creación, Descripción, RutaExpediente)
     VALUES (?, ?, ?, ?)
   `;
 
   db.query(query, [expediente, fecha, descripcion, ruta], (err, results) => {
     if (err) {
       console.error('Error al registrar la carpeta:', err);
-      return res.status(500).json({ error: 'Error al registrar la carpeta' });
+      return res.status(500).json({ error: 'Error al registrar la carpeta:  ${err.message}' });
     }
     res.status(200).json({ message: 'Carpeta registrada exitosamente' });
   });
@@ -99,7 +100,93 @@ app.get('/get-folders', (req, res) => {
 });
 
 
+// Ruta para obtener los archivos de una carpeta específica
+app.get('/files', (req, res) => {
+  
+  const expedienteNombre = req.query.expedienteNombre; // Obtiene el nombre del expediente desde el frontend
+
+if (!expedienteNombre) {
+  return res.status(400).json({ error: 'Nombre del expediente no proporcionado' });
+}
+
+// Consulta para obtener la ruta del expediente basado en su nombre
+const query = 'SELECT RutaExpediente FROM CARPETA WHERE Nombre_expediente = ?';
+
+db.query(query, [expedienteNombre], (err, results) => {
+  if (err) {
+    console.error('Error al obtener la ruta del expediente:', err);
+    return res.status(500).json({ error: 'Error al obtener la ruta del expediente' });
+  }
+
+  if (results.length === 0) {
+    return res.status(404).json({ error: 'Expediente no encontrado' });
+  }
+
+  const folderPath = results[0].RutaExpediente;
+
+
+  // Verifica si la carpeta existe
+  fs.readdir(folderPath, (err, files) => {
+    if (err) {
+      console.error('Error al leer la carpeta:', err);
+      return res.status(500).json({ error: 'Error al leer la carpeta' });
+    }
+
+    // Filtra archivos solo para mostrar los PDFs
+    const pdfFiles = files.filter(file => path.extname(file) === '.pdf');
+    
+    // Devuelve los nombres de los archivos
+    res.json(pdfFiles);
+  });
+});
+});
+
+// Ruta para abrir archivos basados en path absoluto
+app.post('/filesPath', (req, res) => {
+
+  const { pathAbsoluto } = req.body;
+  pathFrontend = pathAbsoluto;
+  
+  console.log(pathFrontend);
+
+  res.status(200).json({ message: 'path completado' });
+
+});
+
+// Ruta para abrir archivos basados en el path relativo
+//app.use('/filesOpen', express.static(pathFrontend));
+
+// Ruta para abrir archivos basados en el path relativo
+app.get('/filesOpen/:fileName', (req, res) => {
+  // Obtiene el nombre del archivo de los parámetros
+  const fileName = req.params.fileName;
+
+  // Verifica que pathFrontend esté configurado
+  if (!pathFrontend) {
+    return res.status(400).json({ error: 'Path no configurado' });
+  }
+
+  // Construye la ruta completa del archivo
+  const filePath = path.join(pathFrontend, fileName);
+
+  // Verifica si el archivo existe
+  if (fs.existsSync(filePath)) {
+    // Envia el archivo al cliente
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        console.error('Error al abrir el archivo:', err);
+        return res.status(500).json({ error: 'Error al abrir el archivo' });
+      }
+    });
+  } else {
+    return res.status(404).json({ error: 'Archivo no encontrado' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
+
+
+
 
