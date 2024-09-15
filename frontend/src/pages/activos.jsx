@@ -19,12 +19,15 @@ import {
   DialogTitle,
   InputAdornment,
   Button,
+  MenuItem,
+  Select,
 } from "@mui/material";
 import {
   Visibility,
   CompareArrows,
   Scanner,
   Search,
+  FileUpload,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
@@ -41,20 +44,43 @@ const ActivosPage = () => {
   const [openVisualizar, setOpenVisualizar] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [selectedFolder, setSelectedFolder] = useState(null);
+  const [openCambiarEstado, setOpenCambiarEstado] = useState(false);
+  const [nuevoEstado, setNuevoEstado] = useState("");
+  const [folderToChange, setFolderToChange] = useState(null);
+  const [file, setFile] = useState(null);
+  const [destinationPath, setDestinationPath] = useState("");
+  const [openEscanear, setOpenEscanear] = useState(false);
 
+  // useEffect(() => {
+  //   const fetchFolders = async () => {
+  //     try {
+  //       const response = await axios.get("http://localhost:3000/get-folders");
+  //       setFolders(response.data);
+  //     } catch (error) {
+  //       console.error("Error al obtener las carpetas:", error);
+  //       alert("Error al obtener las carpetas.");
+  //     }
+  //   };
+    
+    
+  //   fetchFolders();
+  // }, []);
+
+  const fetchFolders = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/get-folders");
+      setFolders(response.data);
+    } catch (error) {
+      console.error("Error al obtener las carpetas:", error);
+      alert("Error al obtener las carpetas.");
+    }
+  };
+  
+  // Llama fetchFolders cuando el componente se monte
   useEffect(() => {
-    const fetchFolders = async () => {
-      try {
-        const response = await axios.get("http://localhost:3000/get-folders");
-        setFolders(response.data);
-      } catch (error) {
-        console.error("Error al obtener las carpetas:", error);
-        alert("Error al obtener las carpetas.");
-      }
-    };
-
     fetchFolders();
   }, []);
+  
 
   const handleLogout = () => {
     navigate("/login");
@@ -75,7 +101,6 @@ const ActivosPage = () => {
     try {
       // Selección del directorio
       const directoryHandle = await window.showDirectoryPicker();
-
 
       let pathRelativo = `${directoryHandle.name}\\${newFolderName}`;
 
@@ -108,6 +133,8 @@ const ActivosPage = () => {
         ruta: path, // Usar la ruta completa
       });
 
+
+      fetchFolders();//actualiza la lista de carpetas
       handleClose();
     } catch (error) {
       console.error("Error al crear la carpeta:", error);
@@ -115,9 +142,7 @@ const ActivosPage = () => {
     }
   };
 
-  
   const handleVisualizar = async (expediente) => {
-    
     try {
       // Busca la carpeta seleccionada
       const folder = folders.find(
@@ -141,7 +166,6 @@ const ActivosPage = () => {
       // Imprimir la ruta en la consola para verificarla
       console.log("Ruta de la carpeta seleccionada:", folderPath);
 
-
       // Hacer la solicitud al backend para obtener los archivos de la carpeta
       const response = await axios.get("http://localhost:3000/files", {
         params: { expedienteNombre: expediente.Nombre_expediente }, // Pasamos la ruta como parámetro
@@ -152,8 +176,6 @@ const ActivosPage = () => {
       setSelectedFiles(files);
       setOpenVisualizar(true);
       localStorage.setItem("pathAbsoluto", expediente.RutaExpediente);
-   
-
     } catch (error) {
       console.error("Error al visualizar los archivos:", error);
       alert("Error al visualizar los archivos.");
@@ -161,25 +183,21 @@ const ActivosPage = () => {
   };
 
   const handleOpenFile = async (file) => {
-
     try {
       console.log("Abriendo archivo:", file);
 
       const pathSimple = localStorage.getItem("pathAbsoluto");
       let pathAbsoluto = pathSimple.replace(/\\/g, "\\\\");
-      
-    
 
-    // Enviar el path absoluto al backend
-   // Hacer la solicitud POST al servidor para enviar el path absoluto
-   await axios.post('http://localhost:3000/filesPath', { pathAbsoluto });
+      // Enviar el path absoluto al backend
+      // Hacer la solicitud POST al servidor para enviar el path absoluto
+      await axios.post("http://localhost:3000/filesPath", { pathAbsoluto });
 
-   // Obtener la URL del archivo
-   const fileUrl = `http://localhost:3000/filesOpen/${file}`;
+      // Obtener la URL del archivo
+      const fileUrl = `http://localhost:3000/filesOpen/${file}`;
 
-   // Abrir el archivo en una nueva pestaña
-   window.open(fileUrl, '_blank');
-      
+      // Abrir el archivo en una nueva pestaña
+      window.open(fileUrl, "_blank");
     } catch (error) {
       console.error("Error al abrir el archivo:", error);
       alert("Error al abrir el archivo.");
@@ -192,12 +210,116 @@ const ActivosPage = () => {
     localStorage.removeItem("pathAbsoluto");
   };
 
-  const handleCambiarEstado = (expediente) => {
-    console.log("Cambio de estado:", expediente);
+  // const handleCambiarEstado = (expediente) => {
+
+  // };
+
+  const handleCambiarEstado = async () => {
+    try {
+      //const rutaExpediente = folderToChange.RutaExpediente;
+      await axios.put("http://localhost:3000/cambiarEstado", {
+        idCarpeta: folderToChange.Id_carpeta,
+        nuevoEstado,
+        //rutaExpediente,
+      });
+      alert("El estado ha sido cambiado exitosamente.");
+      setOpenCambiarEstado(false);
+      setFolderToChange(null);
+      setNuevoEstado("");
+    } catch (error) {
+      console.error("Error al cambiar el estado:", error);
+      alert("Error al cambiar el estado del expediente.");
+    }
   };
 
-  const handleEscanear = (expediente) => {
-    console.log("Escanear expediente:", expediente);
+  const handleOpenCambiarEstado = (folder) => {
+    setFolderToChange(folder);
+    setOpenCambiarEstado(true);
+  };
+
+  // const handleEscanear = (expediente) => {
+  //   console.log("Escanear expediente:", expediente);
+  // };
+
+  const handleOpenEscanear = () => setOpenEscanear(true);
+  const handleCloseEscanear = () => setOpenEscanear(false);
+
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+  };
+
+  const handleDestinationChange = (event) => {
+    setDestinationPath(event.target.value);
+  };
+
+  const handleEscanear = async () => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("destinationPath", destinationPath);
+
+    try {
+      const response = await axios.post("http://localhost:3000/scan-expediente", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      });
+      alert(response.data.message);
+      handleCloseEscanear();
+    } catch (error) {
+      console.error("Error al escanear el expediente:", error);
+      alert("Error al escanear el expediente.");
+    }
+  };
+
+    // const handleImportarArchivos = (folder) => {
+  //   console.log(
+  //     "Importando archivos para el expediente:",
+  //     folder.Nombre_expediente
+  //   );
+   
+  // };
+
+  const handleImportarArchivos = async (folder) => {
+    try {
+      const fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.multiple = true; // Permite múltiples archivos
+  
+      // Cuando se seleccionan los archivos
+      fileInput.onchange = async (event) => {
+        const files = event.target.files;
+        if (!files.length) {
+          alert("No se seleccionaron archivos.");
+          return;
+        }
+  
+        const formData = new FormData();
+        Array.from(files).forEach((file) => formData.append("files", file));
+        formData.append("carpetaId", folder.Id_carpeta);
+
+        
+  
+        try {
+          const response = await axios.post("http://localhost:3000/upload-file", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
+  
+          alert(response.data.message);
+          fetchFolders();//actualiza la lista de carpetas
+        } catch (error) {
+          console.error("Error al subir archivos:", error);
+          alert("Error al subir archivos.");
+        }
+      };
+  
+      // Abre el diálogo de selección de archivos
+      fileInput.click();
+    } catch (error) {
+      console.error("Error al subir archivos:", error);
+      alert("Error al subir archivos.");
+    }
   };
 
   // Filtrado de los expedientes basado en la búsqueda
@@ -205,7 +327,7 @@ const ActivosPage = () => {
     folder.Nombre_expediente?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Define columns for DataTable component 
+  // Define columns for DataTable component
   const columns = [
     {
       name: "Expediente",
@@ -227,18 +349,22 @@ const ActivosPage = () => {
       name: "Acciones",
       cell: (row) => (
         <ButtonGroup variant="contained">
-          <IconButton onClick={() => handleVisualizar(row)}>
+          <IconButton onClick={() => handleVisualizar(row) } color="primary">
             <Visibility />
           </IconButton>
           <IconButton
-            onClick={() => handleCambiarEstado(row.Nombre_expediente)}
+            onClick={() => handleOpenCambiarEstado(row) } color="primary"
           >
             <CompareArrows />
           </IconButton>
 
-          <IconButton onClick={() => handleEscanear(row.Nombre_expediente)}>
+          <IconButton onClick={handleOpenEscanear} color="primary">
             <Scanner />
           </IconButton>
+          <IconButton onClick={() => handleImportarArchivos(row)} color="primary">
+            <FileUpload />
+          </IconButton>
+
         </ButtonGroup>
       ),
     },
@@ -421,7 +547,73 @@ const ActivosPage = () => {
             )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseVisualizar}  color="primary">Cerrar</Button>
+            <Button onClick={handleCloseVisualizar} color="primary">
+              Cerrar
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={openCambiarEstado}
+          onClose={() => setOpenCambiarEstado(false)}
+        >
+          <DialogTitle>Cambiar Estado del Expediente</DialogTitle>
+          <DialogContent>
+            <Select
+              label="Nuevo Estado"
+              variant="outlined"
+              size="small"
+              value={nuevoEstado}
+              onChange={(e) => setNuevoEstado(e.target.value)}
+              fullWidth
+              displayEmpty
+            >
+              <MenuItem value="" disabled>
+                <em>Elija el estado</em>
+              </MenuItem>
+              <MenuItem value="Pendientes">Pendientes</MenuItem>
+              <MenuItem value="Finalizados">Finalizados</MenuItem>
+            </Select>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenCambiarEstado(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCambiarEstado} color="primary">
+              Cambiar
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={openEscanear}
+          onClose={handleCloseEscanear}
+        >
+          <DialogTitle>Escanear Expediente</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Selecciona el archivo y especifica la ubicación donde deseas guardarlo.
+            </DialogContentText>
+            <TextField
+              margin="dense"
+              label="Ruta de destino"
+              fullWidth
+              variant="outlined"
+              value={destinationPath}
+              onChange={handleDestinationChange}
+              sx={{ marginTop: 2 }}
+            />
+            <input
+              type="file"
+              onChange={handleFileChange}
+              style={{ marginTop: 16, width: "100%" }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseEscanear}>Cancelar</Button>
+            <Button onClick={handleEscanear} color="primary">
+              Escanear
+            </Button>
           </DialogActions>
         </Dialog>
       </Container>
@@ -429,3 +621,4 @@ const ActivosPage = () => {
   );
 };
 export default ActivosPage;
+
