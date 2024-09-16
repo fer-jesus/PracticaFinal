@@ -210,10 +210,6 @@ const ActivosPage = () => {
     localStorage.removeItem("pathAbsoluto");
   };
 
-  // const handleCambiarEstado = (expediente) => {
-
-  // };
-
   const handleCambiarEstado = async () => {
     try {
       //const rutaExpediente = folderToChange.RutaExpediente;
@@ -241,9 +237,6 @@ const ActivosPage = () => {
   //   console.log("Escanear expediente:", expediente);
   // };
 
-  const handleOpenEscanear = () => setOpenEscanear(true);
-  const handleCloseEscanear = () => setOpenEscanear(false);
-
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
   };
@@ -251,6 +244,10 @@ const ActivosPage = () => {
   const handleDestinationChange = (event) => {
     setDestinationPath(event.target.value);
   };
+
+  
+  const handleOpenEscanear = () => setOpenEscanear(true);
+  const handleCloseEscanear = () => setOpenEscanear(false);
 
   const handleEscanear = async () => {
     const formData = new FormData();
@@ -297,8 +294,6 @@ const ActivosPage = () => {
         Array.from(files).forEach((file) => formData.append("files", file));
         formData.append("carpetaId", folder.Id_carpeta);
 
-        
-  
         try {
           const response = await axios.post("http://localhost:3000/upload-file", formData, {
             headers: {

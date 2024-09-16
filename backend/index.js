@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt'); // Importa bcrypt para el hash de contraseñas
 const db = require('./database'); // Importa la configuración de la base de datos
 const fs = require('fs'); // Importa el módulo fs para el manejo del sistema de archivos
 const path = require('path'); // Importa el módulo path para manejar rutas de archivos
-const multer = require('multer');//Importa el modulo multer para subir archivos
+//const multer = require('multer');//Importa el modulo multer para subir archivos
 //const { PDFDocument } = require('pdf-lib');
 const fileUpload = require('express-fileupload');
 
@@ -231,99 +231,50 @@ app.get('/carpetas/:estado', (req, res) => {
   });
 });
 
-// Configuración de multer para manejar la carga de archivos
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, 'temp/'); // Carpeta temporal
-    },
-    filename: function (req, file, cb) {
-      cb(null, `${Date.now()}-${file.originalname}`); // Nombre del archivo
-    }
-  })
-});
-
-// Endpoint para manejar la carga de archivos
-app.post('/scan-expediente', upload.single('file'), (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No se ha cargado ningún archivo' });
-    }
-
-    const { expediente, destinationPath } = req.body;
-
-    if (!destinationPath) {
-      return res.status(400).json({ error: 'No se especificó una ruta de destino' });
-    }
-
-    // Asegúrate de que la carpeta de destino existe
-    if (!fs.existsSync(destinationPath)) {
-      fs.mkdirSync(destinationPath, { recursive: true });
-    }
-
-    // Ruta del archivo cargado
-    const tempFilePath = path.join(__dirname, 'temp', req.file.filename);
-    const destinationFilePath = path.join(destinationPath, req.file.filename);
-
-    // Mueve el archivo de la carpeta temporal a la ruta especificada
-    fs.renameSync(tempFilePath, destinationFilePath);
-
-    res.status(200).json({ message: 'Archivo escaneado y guardado con éxito', file: destinationFilePath });
-
-  } catch (error) {
-    console.error('Error al escanear el documento:', error);
-    res.status(500).json({ error: 'Error al escanear el documento' });
-  }
-});
-
-
-// // Middleware para obtener la ruta del expediente
-// const getDestination = async (req, res, next) => {
-//   try {
-//     const { carpetaId } = req.body; // ID de la carpeta enviado desde el frontend
-
-//     // Consulta para obtener la ruta del expediente
-//     const query = 'SELECT RutaExpediente FROM CARPETA WHERE Id = ?';
-//     db.query(query, [carpetaId], (err, results) => {
-//       if (err) {
-//         return res.status(500).json({ error: 'Error al consultar la base de datos' });
-//       }
-//       if (results.length === 0) {
-//         return res.status(404).json({ error: 'Carpeta no encontrada' });
-//       }
-
-//       // Establecer la ruta del expediente en `req`
-//       req.uploadDestination = results[0].RutaExpediente;
-//       console.log('Ruta del expediente obtenida:', req.uploadDestination);
-//       next();
-//     });
-//   } catch (error) {
-//     console.error('Error en el middleware de destino:', error);
-//     res.status(500).json({ error: 'Error en el middleware de destino' });
-//   }
-// };
-
-// // Configuración de multer para almacenar archivos en una carpeta específica
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, 'uploads'); // Carpeta donde se almacenarán los archivos
-//   },
-//   filename: (req, file, cb) => {
-//     cb(null, `${Date.now()}-${file.originalname}`);
-//   },
+// // Configuración de multer para manejar la carga de archivos
+// const upload = multer({
+//   storage: multer.diskStorage({
+//     destination: function (req, file, cb) {
+//       cb(null, 'temp/'); // Carpeta temporal
+//     },
+//     filename: function (req, file, cb) {
+//       cb(null, `${Date.now()}-${file.originalname}`); // Nombre del archivo
+//     }
+//   })
 // });
 
- //const upload2 = multer({ storage });
+// // Endpoint para manejar la carga de archivos
+// app.post('/scan-expediente', upload.single('file'), (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ error: 'No se ha cargado ningún archivo' });
+//     }
 
-// app.use(cors());
-// app.use(bodyParser.json());
- 
-// // Crear la carpeta 'uploads' si no existe
+//     const { expediente, destinationPath } = req.body;
 
-// const uploadDir = './uploads';
-// if (!fs.existsSync(uploadDir)) {
-//   fs.mkdirSync(uploadDir);
-// }
+//     if (!destinationPath) {
+//       return res.status(400).json({ error: 'No se especificó una ruta de destino' });
+//     }
+
+//     // Asegúrate de que la carpeta de destino existe
+//     if (!fs.existsSync(destinationPath)) {
+//       fs.mkdirSync(destinationPath, { recursive: true });
+//     }
+
+//     // Ruta del archivo cargado
+//     const tempFilePath = path.join(__dirname, 'temp', req.file.filename);
+//     const destinationFilePath = path.join(destinationPath, req.file.filename);
+
+//     // Mueve el archivo de la carpeta temporal a la ruta especificada
+//     fs.renameSync(tempFilePath, destinationFilePath);
+
+//     res.status(200).json({ message: 'Archivo escaneado y guardado con éxito', file: destinationFilePath });
+
+//   } catch (error) {
+//     console.error('Error al escanear el documento:', error);
+//     res.status(500).json({ error: 'Error al escanear el documento' });
+//   }
+// });
 
 // Ruta para subir archivos al expediente seleccionado
 app.post('/upload-file', (req, res) => {
