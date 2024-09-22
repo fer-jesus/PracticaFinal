@@ -47,9 +47,9 @@ const ActivosPage = () => {
   const [openCambiarEstado, setOpenCambiarEstado] = useState(false);
   const [nuevoEstado, setNuevoEstado] = useState("");
   const [folderToChange, setFolderToChange] = useState(null);
-  const [file, setFile] = useState(null);
-  const [destinationPath, setDestinationPath] = useState("");
-  const [openEscanear, setOpenEscanear] = useState(false);
+  //const [file, setFile] = useState(null);
+  //const [destinationPath, setDestinationPath] = useState("");
+  //const [openEscanear, setOpenEscanear] = useState(false);
 
   // useEffect(() => {
   //   const fetchFolders = async () => {
@@ -62,26 +62,24 @@ const ActivosPage = () => {
   //     }
   //   };
     
-    
   //   fetchFolders();
   // }, []);
 
   const fetchFolders = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/get-folders");
+      const response = await axios.get("http://localhost:3000/get-folders/Activos");
+      console.log(response.data);
       setFolders(response.data);
     } catch (error) {
       console.error("Error al obtener las carpetas:", error);
       alert("Error al obtener las carpetas.");
     }
   };
-  
-  // Llama fetchFolders cuando el componente se monte
+  // Llama a fetchFolders cuando el componente se monte
   useEffect(() => {
     fetchFolders();
   }, []);
   
-
   const handleLogout = () => {
     navigate("/login");
   };
@@ -98,13 +96,26 @@ const ActivosPage = () => {
   //const pathRelativo= "C:\\Users\\JFGL\\Desktop\\Expedientes\\Activos";
 
   const handleCreateFolder = async () => {
+    if (!newFolderName.trim()) {
+      alert("El nombre de la carpeta no puede estar vacío.");
+      return;
+    }
     try {
       // Selección del directorio
       const directoryHandle = await window.showDirectoryPicker();
 
       let pathRelativo = `${directoryHandle.name}\\${newFolderName}`;
 
-      let path = "C:\\Users\\JFGL\\Desktop\\Expedientes\\" + pathRelativo;
+      let path = `C:\\Users\\JFGL\\Desktop\\Expedientes\\${pathRelativo}`;
+
+      // Verificar si la carpeta ya existe en el sistema de archivos
+    try {
+      await directoryHandle.getDirectoryHandle(newFolderName);
+      alert("Ya existe una carpeta con este nombre.");
+      return;
+    } catch (error) {
+      // Si la carpeta no existe, continua con la creación
+    }
 
       // Crea la nueva carpeta en el directorio seleccionado
       const newFolderHandle = await directoryHandle.getDirectoryHandle(
@@ -112,11 +123,22 @@ const ActivosPage = () => {
         { create: true }
       );
 
+       // Registra la nueva carpeta en la base de datos
+       const response = await axios.post("http://localhost:3000/register-folder", {
+        expediente: newFolderName,
+        fecha: new Date().toISOString().split("T")[0],
+        descripcion: "Nueva carpeta",
+        ruta: path, // Usar la ruta completa
+        id_estado: 1,
+      });
+
+      if (response.status === 200) {
+        // Solo actualiza el estado de la UI si la carpeta se registró correctamente en la base de datos
       // Agrega la nueva carpeta a la lista de folders
-      setFolders([
-        ...folders,
+      setFolders(prevFolders =>[
+        ...prevFolders,
         {
-          Id_carpeta: folders.length + 1,
+          Id_carpeta: prevFolders.length + 1,
           Nombre_expediente: newFolderName,
           Fecha_creación: new Date().toISOString().split("T")[0],
           Descripción: "Nueva carpeta",
@@ -125,17 +147,11 @@ const ActivosPage = () => {
         },
       ]);
 
-      // Registra la nueva carpeta en la base de datos
-      await axios.post("http://localhost:3000/register-folder", {
-        expediente: newFolderName,
-        fecha: new Date().toISOString().split("T")[0],
-        descripcion: "Nueva carpeta",
-        ruta: path, // Usar la ruta completa
-      });
-
-
       fetchFolders();//actualiza la lista de carpetas
       handleClose();
+    }else{
+      alert("Error al registrar la carpeta.");
+    }
     } catch (error) {
       console.error("Error al crear la carpeta:", error);
       alert("Error al crear la carpeta");
@@ -211,62 +227,66 @@ const ActivosPage = () => {
   };
 
   const handleCambiarEstado = async () => {
+    if (!folderToChange || !nuevoEstado) {
+      alert("Seleccione una carpeta y un estado válido.");
+      return;
+    }
+  
     try {
-      //const rutaExpediente = folderToChange.RutaExpediente;
+ // Realiza la solicitud PUT para cambiar el estado de la carpeta
       await axios.put("http://localhost:3000/cambiarEstado", {
-        idCarpeta: folderToChange.Id_carpeta,
-        nuevoEstado,
-        //rutaExpediente,
+        idCarpeta: folderToChange.Id_carpeta,// Enviar el ID correcto de la carpeta
+        nuevoEstado, // Enviar el nuevo estado a la ruta
       });
-      alert("El estado ha sido cambiado exitosamente.");
+  
+      alert("El estado ha sido cambiado exitosamente y la carpeta fue movida.");
       setOpenCambiarEstado(false);
       setFolderToChange(null);
       setNuevoEstado("");
+
+      fetchFolders();//// Vuelve a cargar las carpetas de activos actualizadas
+      
     } catch (error) {
       console.error("Error al cambiar el estado:", error);
       alert("Error al cambiar el estado del expediente.");
     }
   };
-
+  
   const handleOpenCambiarEstado = (folder) => {
-    setFolderToChange(folder);
+    setFolderToChange(folder);// Establece la carpeta seleccionada
     setOpenCambiarEstado(true);
   };
-
-  // const handleEscanear = (expediente) => {
-  //   console.log("Escanear expediente:", expediente);
-  // };
-
-  const handleFileChange = (event) => {
-    setFile(event.target.files[0]);
-  };
-
-  const handleDestinationChange = (event) => {
-    setDestinationPath(event.target.value);
-  };
-
   
-  const handleOpenEscanear = () => setOpenEscanear(true);
-  const handleCloseEscanear = () => setOpenEscanear(false);
-
-  const handleEscanear = async () => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("destinationPath", destinationPath);
-
-    try {
-      const response = await axios.post("http://localhost:3000/scan-expediente", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data"
-        }
-      });
-      alert(response.data.message);
-      handleCloseEscanear();
-    } catch (error) {
-      console.error("Error al escanear el expediente:", error);
-      alert("Error al escanear el expediente.");
-    }
+ 
+  
+    const handleEscanear = (expediente) => {
+    console.log("Escanear expediente:", expediente);
   };
+
+   // const handleOpenEscanear = () => setOpenEscanear(true);
+  // const handleCloseEscanear = () => setOpenEscanear(false);
+
+  // const handleOpenEscanear = () => setOpenEscanear(true);
+
+
+  // const handleEscanear = async () => {
+  //   const formData = new FormData();
+  //   formData.append("file", file);
+  //   formData.append("destinationPath", destinationPath);
+
+  //   try {
+  //     const response = await axios.post("http://localhost:3000/scan-expediente", formData, {
+  //       headers: {
+  //         "Content-Type": "multipart/form-data"
+  //       }
+  //     });
+  //     alert(response.data.message);
+  //     handleCloseEscanear();
+  //   } catch (error) {
+  //     console.error("Error al escanear el expediente:", error);
+  //     alert("Error al escanear el expediente.");
+  //   }
+  // };
 
     // const handleImportarArchivos = (folder) => {
   //   console.log(
@@ -353,7 +373,7 @@ const ActivosPage = () => {
             <CompareArrows />
           </IconButton>
 
-          <IconButton onClick={handleOpenEscanear} color="primary">
+          <IconButton onClick={handleEscanear} color="primary">
             <Scanner />
           </IconButton>
           <IconButton onClick={() => handleImportarArchivos(row)} color="primary">
@@ -394,7 +414,7 @@ const ActivosPage = () => {
             }}
           >
             <Typography variant="h4" sx={{ marginBottom: 2 }}>
-              Activos
+              {/* Activos */}
             </Typography>
             <TextField
               label="Buscar Expediente"
@@ -451,6 +471,11 @@ const ActivosPage = () => {
               fixedHeaderScrollHeight="50vh"
               responsive
               customStyles={{
+                table: {
+                  style: {
+                    height: "300px", // Altura fija para la tabla completa
+                  },
+                },
                 headCells: {
                   style: {
                     fontSize: "16px", // Tamaño de la fuente del encabezado
@@ -520,7 +545,7 @@ const ActivosPage = () => {
                   <TableBody>
                     {selectedFiles.map((file, index) => (
                       <TableRow key={index}>
-                        <TableCell>{file}</TableCell>
+                        <TableCell>{decodeURIComponent(escape(file))}</TableCell>
                         <TableCell>
                           <Button
                             variant="contained"
@@ -580,7 +605,7 @@ const ActivosPage = () => {
           </DialogActions>
         </Dialog>
 
-        <Dialog
+        {/* <Dialog
           open={openEscanear}
           onClose={handleCloseEscanear}
         >
@@ -610,10 +635,11 @@ const ActivosPage = () => {
               Escanear
             </Button>
           </DialogActions>
-        </Dialog>
+        </Dialog> */}
       </Container>
     </div>
   );
 };
+
 export default ActivosPage;
 

@@ -6,7 +6,6 @@ const db = require('./database'); // Importa la configuración de la base de dat
 const fs = require('fs'); // Importa el módulo fs para el manejo del sistema de archivos
 const path = require('path'); // Importa el módulo path para manejar rutas de archivos
 //const multer = require('multer');//Importa el modulo multer para subir archivos
-//const { PDFDocument } = require('pdf-lib');
 const fileUpload = require('express-fileupload');
 
 const app = express();
@@ -18,11 +17,12 @@ app.use(bodyParser.json());
 app.use(express.json()); // Para parsear el cuerpo de las solicitudes en formato JSON
 app.use(fileUpload()); // Middleware para manejar archivos
 
-// const estadosRutas = {
-//   'Pendientes': 'C:\\Users\\JFGL\\Desktop\\Expedientes\\Pendientes',
-//   'Finalizados': 'C:\\Users\\JFGL\\Desktop\\Expedientes\\Finalizados',
-//   'Activos': 'C:\\Users\\JFGL\\Desktop\\Expedientes\\Activos'
-// };
+const rutasEstados = {
+  'Activos': 'C:\\Users\\JFGL\\Desktop\\Expedientes\\Activos',
+  'Pendientes': 'C:\\Users\\JFGL\\Desktop\\Expedientes\\Pendientes',
+  'Finalizados': 'C:\\Users\\JFGL\\Desktop\\Expedientes\\Finalizados',
+  
+};
 
 // Ruta para registrar usuarios
 app.post('/register', async (req, res) => {
@@ -79,36 +79,80 @@ app.post('/login', (req, res) => {
   });
 });
 
-//Ruta para registrar una nueva carpeta en la base de datos
+// Ruta para registrar una nueva carpeta en la base de datos
 app.post('/register-folder', (req, res) => {
-  const { expediente, fecha, descripcion, ruta } = req.body;
+  const { expediente, fecha, descripcion, ruta, id_estado } = req.body;
 
-  const query = `
+  const queryCarpeta = `
     INSERT INTO CARPETA (Nombre_expediente, Fecha_creación, Descripción, RutaExpediente)
     VALUES (?, ?, ?, ?)
   `;
 
-  db.query(query, [expediente, fecha, descripcion, ruta], (err, results) => {
+  // Inserta en la tabla CARPETA
+  db.query(queryCarpeta, [expediente, fecha, descripcion, ruta], (err, results) => {
     if (err) {
       console.error('Error al registrar la carpeta:', err);
-      return res.status(500).json({ error: 'Error al registrar la carpeta:  ${err.message}' });
+      return res.status(500).json({ error: `Error al registrar la carpeta: ${err.message}` });
     }
-    res.status(200).json({ message: 'Carpeta registrada exitosamente' });
+
+    // Obtener el ID de la carpeta insertada
+    const idCarpeta = results.insertId;
+
+    // Asociar la carpeta con un estado en CARPETA_ESTADO
+    const queryEstado = `
+      INSERT INTO CARPETA_ESTADO (Id_carpeta, Id_estado)
+      VALUES (?, ?)
+    `;
+
+    // Usar el id_estado que viene en el body (por ejemplo, "1" para Activos)
+    db.query(queryEstado, [idCarpeta, id_estado], (err) => {
+      if (err) {
+        console.error('Error al asociar la carpeta con el estado:', err);
+        return res.status(500).json({ error: `Error al asociar la carpeta con el estado: ${err.message}` });
+      }
+
+      res.status(200).json({ message: 'Carpeta registrada exitosamente con estado' });
+    });
   });
 });
 
-// Ruta para obtener todas las carpetas
-app.get('/get-folders', (req, res) => {
-  const query = 'SELECT * FROM CARPETA';
+// Ruta para obtener carpetas por estado
+app.get('/get-folders/:estado', (req, res) => {
+  const { estado } = req.params;
+  console.log('Estado recibido:', estado);
+  const query = `
+    SELECT C.Id_carpeta, C.Nombre_expediente, C.Fecha_creación, C.Descripción, C.RutaExpediente
+    FROM CARPETA C
+    INNER JOIN CARPETA_ESTADO CE ON C.Id_carpeta = CE.Id_carpeta
+    INNER JOIN ESTADO E ON CE.Id_estado = E.Id_estado
+    WHERE LOWER(E.Nombre_estado) = ?
+  `;
 
-  db.query(query, (err, results) => {
+  db.query(query, [estado], (err, results) => {
     if (err) {
       console.error('Error al obtener las carpetas:', err);
-      return res.status(500).json({ error: 'Error al obtener las carpetas' });
+      return res.status(500).json({ error: 'Error al obtener las carpetas.' });
     }
+    if (results.length === 0) {
+      return res.status(200).json([]);
+    }
+
     res.status(200).json(results);
   });
-});
+}); 
+//hacer una carga para cada boton, el boton tiene capturar el estado haciendo un select case por ejemplo 
+
+// app.get('/get-folders/:estado', (req, res) => {
+//   const query = 'SELECT * FROM CARPETA';
+
+//   db.query(query, (err, results) => {
+//     if (err) {
+//       console.error('Error al obtener las carpetas:', err);
+//       return res.status(500).json({ error: 'Error al obtener las carpetas' });
+//     }
+//     res.status(200).json(results);
+//   });
+// });
 
 // Ruta para obtener los archivos de una carpeta específica
 app.get('/files', (req, res) => {
@@ -193,55 +237,74 @@ app.get('/filesOpen/:fileName', (req, res) => {
   }
 });
 
-// Ruta para cambiar el estado de una carpeta
+// Ruta para cambiar el estado de una carpeta version
 app.put('/cambiarEstado', (req, res) => {
   const { idCarpeta, nuevoEstado } = req.body;
 
-  const query = `
-    INSERT INTO CARPETA_ESTADO (Id_carpeta, Id_estado)
-    VALUES (?, ?)
-  `;
+  // Se obtiene el Id_estado basado en el nuevo nombre de estado
+  const obtenerEstadoQuery = `SELECT Id_estado FROM ESTADO WHERE Nombre_estado = ?`;
 
-  db.query(query, [idCarpeta, nuevoEstado], (err, results) => {
+  db.query(obtenerEstadoQuery, [nuevoEstado], (err, estadoResults) => {
     if (err) {
-      console.error('Error al cambiar el estado de la carpeta:', err);
-      return res.status(500).json({ error: 'Error al cambiar el estado' });
+      console.error('Error al obtener el estado:', err);
+      return res.status(500).json({ error: 'Error al obtener el estado' });
     }
-    res.status(200).json({ message: 'Estado de la carpeta cambiado exitosamente' });
+
+    if (estadoResults.length === 0) {
+      return res.status(404).json({ error: 'Estado no encontrado' });
+    }
+
+    const idNuevoEstado = estadoResults[0].Id_estado;
+
+    // Obtención de la carpeta actual desde la base de datos
+    const obtenerCarpetaQuery = `SELECT RutaExpediente FROM CARPETA WHERE Id_carpeta = ?`;
+
+    db.query(obtenerCarpetaQuery, [idCarpeta], (err, carpetaResults) => {
+      if (err) {
+        console.error('Error al obtener la carpeta:', err);
+        return res.status(500).json({ error: 'Error al obtener la carpeta' });
+      }
+
+      if (carpetaResults.length === 0) {
+        return res.status(404).json({ error: 'Carpeta no encontrada' });
+      }
+
+      const carpeta = carpetaResults[0];
+      const rutaActual = carpeta.RutaExpediente;
+      const nuevaRuta = path.join(rutasEstados[nuevoEstado], path.basename(rutaActual));
+
+      // Mover la carpeta en el sistema de archivos
+      fs.rename(rutaActual, nuevaRuta, (err) => {
+        if (err) {
+          console.error('Error al mover la carpeta:', err);
+          return res.status(500).json({ error: 'Error al mover la carpeta' });
+        }
+
+        // Actualizar la ruta en la base de datos
+        const actualizarRutaQuery = `UPDATE CARPETA SET RutaExpediente = ? WHERE Id_carpeta = ?`;
+
+        db.query(actualizarRutaQuery, [nuevaRuta, idCarpeta], (err) => {
+          if (err) {
+            console.error('Error al actualizar la ruta:', err);
+            return res.status(500).json({ error: 'Error al actualizar la ruta en la base de datos' });
+          }
+
+          // Actualizar la tabla CARPETA_ESTADO
+          const actualizarCarpetaEstadoQuery = `UPDATE CARPETA_ESTADO SET Id_estado = ? WHERE Id_carpeta = ?`;
+
+          db.query(actualizarCarpetaEstadoQuery, [idNuevoEstado, idCarpeta], (err) => {
+            if (err) {
+              console.error('Error al actualizar el estado de la carpeta:', err);
+              return res.status(500).json({ error: 'Error al actualizar el estado en la base de datos' });
+            }
+
+            res.status(200).json({ message: 'Estado de la carpeta cambiado y carpeta movida exitosamente' });
+          });
+        });
+      });
+    });
   });
 });
-
-// Ruta para listar carpetas por estado
-app.get('/carpetas/:estado', (req, res) => {
-  const estado = req.params.estado;
-
-  const query = `
-    SELECT C.Nombre_expediente, C.Fecha_creación, C.Descripción, C.RutaExpediente
-    FROM CARPETA C
-    JOIN CARPETA_ESTADO CE ON C.Id_carpeta = CE.Id_carpeta
-    WHERE CE.Id_estado = ?
-  `;
-
-  db.query(query, [estado], (err, results) => {
-    if (err) {
-      console.error('Error al obtener carpetas:', err);
-      return res.status(500).json({ error: 'Error al obtener carpetas' });
-    }
-    res.status(200).json(results);
-  });
-});
-
-// // Configuración de multer para manejar la carga de archivos
-// const upload = multer({
-//   storage: multer.diskStorage({
-//     destination: function (req, file, cb) {
-//       cb(null, 'temp/'); // Carpeta temporal
-//     },
-//     filename: function (req, file, cb) {
-//       cb(null, `${Date.now()}-${file.originalname}`); // Nombre del archivo
-//     }
-//   })
-// });
 
 // // Endpoint para manejar la carga de archivos
 // app.post('/scan-expediente', upload.single('file'), (req, res) => {
@@ -279,10 +342,6 @@ app.get('/carpetas/:estado', (req, res) => {
 // Ruta para subir archivos al expediente seleccionado
 app.post('/upload-file', (req, res) => {
   try {
-    // Verifica que los archivos existan
-    // if (!req.files || Object.keys(req.files).length === 0) {
-    //   return res.status(400).send('No se seleccionaron archivos.');
-    // }
     if (!req.files || !req.files.files) {
       return res.status(400).send('No se seleccionaron archivos.');
     }
@@ -320,12 +379,7 @@ app.post('/upload-file', (req, res) => {
         const destino = path.join(carpetaRuta, file.name);
         fs.writeFileSync(destino, file.data); // Guardar el archivo en la carpeta 
       });
-      // // Iterar sobre los archivos subidos y guardarlos en la carpeta
-      // Object.values(req.files).forEach((file) => {
-      //   const destino = path.join(carpetaRuta, file.name);
-      //   fs.writeFileSync(destino, file.data); // Guardar el archivo en la carpeta
-      // });
-
+   
       res.status(200).json({ message: 'Archivos subidos exitosamente al expediente.' });
     });
   } catch (error) {
@@ -334,55 +388,65 @@ app.post('/upload-file', (req, res) => {
   }
 });
 
-// Ruta para eliminar una carpeta
+//Ruta para eliminar una carpeta version
 app.delete('/delete-folder', (req, res) => {
-  const { Nombre_expediente } = req.body;
+  const { Id_carpeta } = req.body;
 
-  if (!Nombre_expediente) {
-    return res.status(400).json({ error: 'Nombre del expediente es requerido' });
+  if (!Id_carpeta) {
+    console.error('ID de la carpeta es requerido');
+    return res.status(400).json({ error: 'ID de la carpeta es requerido' });
   }
 
-  //const query = 'DELETE FROM CARPETA WHERE Nombre_expediente = ?';
-    // Consulta para obtener la ruta del expediente desde la base de datos
-  const getFolderQuery = 'SELECT RutaExpediente FROM CARPETA WHERE Nombre_expediente = ?';
-
-  db.query(getFolderQuery, [Nombre_expediente], (err, results) => {
+  // Consulta para obtener la ruta del expediente usando el ID de la carpeta
+  const getFolderQuery = 'SELECT RutaExpediente FROM CARPETA WHERE Id_carpeta = ?';
+  db.query(getFolderQuery, [Id_carpeta], (err, results) => {
     if (err) {
       console.error('Error al obtener la ruta del expediente:', err);
       return res.status(500).json({ error: 'Error al obtener la ruta del expediente' });
     }
 
     if (results.length === 0) {
+      console.error('Carpeta no encontrada');
       return res.status(404).json({ error: 'Carpeta no encontrada' });
     }
 
     const folderPath = results[0].RutaExpediente;
+    console.log('Ruta del expediente:', folderPath);
 
-    // Eliminar la carpeta del sistema de archivos
-    fs.rmdir(folderPath, { recursive: true }, (err) => {
+    // Eliminar las entradas relacionadas en CARPETA_ESTADO
+    const deleteRelatedQuery = 'DELETE FROM CARPETA_ESTADO WHERE Id_carpeta = ?';
+    db.query(deleteRelatedQuery, [Id_carpeta], (err, relatedResults) => {
       if (err) {
-        console.error('Error al eliminar la carpeta del sistema de archivos:', err);
-        return res.status(500).json({ error: 'Error al eliminar la carpeta del sistema de archivos' });
+        console.error('Error al eliminar las referencias en CARPETA_ESTADO:', err);
+        return res.status(500).json({ error: 'Error al eliminar las referencias en CARPETA_ESTADO' });
       }
 
-    // Eliminar la entrada de la base de datos
-    const deleteQuery = 'DELETE FROM CARPETA WHERE Nombre_expediente = ?';
-    db.query(deleteQuery, [Nombre_expediente], (err, results) => {
-      if (err) {
-        console.error('Error al eliminar la carpeta de la base de datos:', err);
-        return res.status(500).json({ error: 'Error al eliminar la carpeta de la base de datos' });
-      }
+      // Si no hay errores, proceder a eliminar la carpeta de la base de datos
+      const deleteQuery = 'DELETE FROM CARPETA WHERE Id_carpeta = ?';
+      db.query(deleteQuery, [Id_carpeta], (err, dbResults) => {
+        if (err) {
+          console.error('Error al eliminar la carpeta de la base de datos:', err);
+          return res.status(500).json({ error: 'Error al eliminar la carpeta de la base de datos' });
+        }
 
-      if (results.affectedRows === 0) {
-        return res.status(404).json({ error: 'Carpeta no encontrada' });
-      }
+        if (dbResults.affectedRows === 0) {
+          console.error('Carpeta no encontrada en la base de datos');
+          return res.status(404).json({ error: 'Carpeta no encontrada en la base de datos' });
+        }
 
-      res.status(200).json({ message: 'Carpeta eliminada exitosamente' });
+        // Si la carpeta se eliminó de la base de datos, eliminar del sistema de archivos
+        fs.rmdir(folderPath, { recursive: true }, (err) => {
+          if (err) {
+            console.error('Error al eliminar la carpeta del sistema de archivos:', err);
+            return res.status(500).json({ error: 'Error al eliminar la carpeta del sistema de archivos' });
+          }
+
+          res.status(200).json({ message: 'Carpeta eliminada exitosamente' });
+        });
+      });
     });
   });
 });
-});
-
 
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);

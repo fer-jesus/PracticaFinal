@@ -46,25 +46,24 @@ const PendientesPage = () => {
   useEffect(() => {
     const fetchFolders = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/get-folders?estado=Pendientes");
+        const response = await axios.get('http://localhost:3000/get-folders/Pendientes');
+        //console.log(response.data);
         setFolders(response.data);
       } catch (error) {
-        console.error("Error al obtener las carpetas:", error);
-        alert("Error al obtener las carpetas.");
+        if (error.response && error.response.status === 404) {
+          setFolders([]); // Si no hay carpetas, se establece una lista vacía
+        } else {
+          console.error('Error al obtener las carpetas:', error);
+        }
       }
     };
-
     fetchFolders();
   }, []);
-
+  
   const handleLogout = () => {
     //limpiar cualquier dato almacenado en localStorage o en el estado global
     navigate("/login"); // Redirige a la página de login
   };
-
-  // const handleVisualizar = (expediente) => {
-  //   console.log("Visualizar expediente:", expediente);
-  // };
 
   const handleVisualizar = async (expediente) => {
     try {
@@ -134,36 +133,36 @@ const PendientesPage = () => {
     localStorage.removeItem("pathAbsoluto");
   };
 
-  // const handleCambiarEstado = (expediente) => {
-  //   console.log("Cambiar estado de:", expediente);
-  // };
-
-
   const handleCambiarEstado = async () => {
+    if (!folderToChange || !nuevoEstado) {
+      alert("Seleccione una carpeta y un estado válido.");
+      return;
+    }
+  
     try {
       await axios.put("http://localhost:3000/cambiarEstado", {
-        expediente: folderToChange.Nombre_expediente,
-        nuevoEstado,
-        rutaExpediente: folderToChange.RutaExpediente,
+        idCarpeta: folderToChange.Id_carpeta,// Enviar el ID correcto de la carpeta
+        nuevoEstado, // Enviar el nuevo estado a la ruta
       });
-      alert("El estado ha sido cambiado exitosamente.");
+  
+      alert("El estado ha sido cambiado exitosamente y la carpeta fue movida.");
       setOpenCambiarEstado(false);
       setFolderToChange(null);
       setNuevoEstado("");
-      // Refresca la lista de carpetas
-      const response = await axios.get("http://localhost:3000/get-folders?estado=Pendientes");
-      setFolders(response.data);
+
+      //fetchFolders();//// Vuelve a cargar las carpetas de activos actualizadas
+      window.location.reload();
     } catch (error) {
       console.error("Error al cambiar el estado:", error);
       alert("Error al cambiar el estado del expediente.");
     }
   };
-
+  
   const handleOpenCambiarEstado = (folder) => {
-    setFolderToChange(folder);
+    setFolderToChange(folder);// Establece la carpeta seleccionada
     setOpenCambiarEstado(true);
   };
-
+  
   const filteredFolders = folders.filter((folder) =>
     folder.Nombre_expediente.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -200,8 +199,6 @@ const PendientesPage = () => {
     },
   ];
 
-
-
   return (
     <div className="pendientes-container">
             <Container sx={{ paddingTop: 4 }}>
@@ -231,7 +228,7 @@ const PendientesPage = () => {
             }}
           >
             <Typography variant="h4" sx={{ marginBottom: 2 }}>
-              Pendientes
+              {/* Pendientes */}
             </Typography>
             <TextField
               label="Buscar Expediente"
@@ -282,6 +279,11 @@ const PendientesPage = () => {
               fixedHeaderScrollHeight="50vh"
               responsive
               customStyles={{
+                table: {
+                  style: {
+                    height: "400px", // Altura fija para la tabla completa
+                  },
+                },
                 headCells: {
                   style: {
                     fontSize: "16px", // Tamaño de la fuente del encabezado
@@ -329,7 +331,7 @@ const PendientesPage = () => {
                   <TableBody>
                     {selectedFiles.map((file, index) => (
                       <TableRow key={index}>
-                        <TableCell>{file}</TableCell>
+                        <TableCell>{decodeURIComponent(escape(file))}</TableCell>
                         <TableCell>
                           <Button
                             variant="contained"

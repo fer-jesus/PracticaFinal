@@ -17,6 +17,8 @@ import {
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import logoBufete from "../assets/Bufete-popular.png"; 
+//import logoUSAC from "../assets/Usac_logo.png";
 
 const LoginPage = () => {
   const [user, setUser] = useState("");
@@ -73,6 +75,9 @@ const LoginPage = () => {
 
   return (
     <div className="login-container">
+      {/* <img src={logoUSAC} alt="Logo USAC" className="logo-usac" /> */}
+      <img src={logoBufete} alt="Logo Bufete" className="logo-bufete" />
+     
       <Container component="main" maxWidth="xs">
         <Paper elevation={3} sx={{ padding: 4 }}>
           <Box

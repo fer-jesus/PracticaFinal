@@ -1,20 +1,20 @@
-import React from 'react';
-import { Container, Typography, Box, Button } from '@mui/material';
+//import React from 'react';
+import { Container, Box, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import StateButtons from '../components/StateButtons';
 import "../styles/menu.css";
+import eduSuperior from "../assets/EduSuperior.png";
 
 const MenuPage = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Aquí puedes limpiar cualquier dato almacenado en localStorage o en el estado global
+    
     navigate('/login');  // Redirige a la página de login
   };
 
-
   return (
-    <div className="activo-container">
+    <div className="menu-container">
       <Container component="main" maxWidth="xs">
         <Box
           sx={{
@@ -24,8 +24,7 @@ const MenuPage = () => {
             alignItems: 'center',
           }}
         >
-
-           {/* Botón de Cerrar Sesión */}
+          <img src={eduSuperior} alt="Logo Bufete" className="edu-superior" />
            <Button
             variant="contained"
             color="secondary"
@@ -35,7 +34,7 @@ const MenuPage = () => {
             Cerrar Sesión
           </Button> 
 
-          <Typography variant="h3" sx={{ marginBottom: 2 }}>Elija el estado</Typography>
+          {/* <Typography variant="h3" sx={{ marginBottom: 2 }}>Elija el estado</Typography> */}
           <StateButtons buttonSize="large" 
           buttonStyle={{ padding: '16px 32px', fontSize: '1.9rem', minWidth: '200px' }}
           />

@@ -1,4 +1,4 @@
-import { useState, useEffect }  from "react";
+import { useState, useEffect } from "react";
 import {
   Container,
   Box,
@@ -20,11 +20,7 @@ import {
   DialogActions,
   DialogContentText,
 } from "@mui/material";
-import {
-  Visibility,
-  Delete,
-  Search,
-} from "@mui/icons-material";
+import { Visibility, Delete, Search } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import StateButtons from "../components/StateButtons";
@@ -40,30 +36,33 @@ const FinalizadosPage = () => {
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [openEliminar, setOpenEliminar] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState(null);
-  
 
   useEffect(() => {
     const fetchFolders = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/get-folders?estado=Finalizados");
-        setFolders(response.data);
+        const response = await axios.get(
+          "http://localhost:3000/get-folders/Finalizados"
+        );
+        if (response.status === 200) {
+          setFolders(response.data);
+        }
       } catch (error) {
-        console.error("Error al obtener las carpetas:", error);
-        alert("Error al obtener las carpetas.");
+        if (error.response && error.response.status === 404) {
+          console.warn("No se encontraron carpetas.");
+          setFolders([]); // Cuando no hay carpetas, se establece como un array vacío
+        } else {
+          console.error("Error al obtener las carpetas:", error);
+          alert("Error al obtener las carpetas.");
+        }
       }
     };
-
     fetchFolders();
-  }, []);
+  }, []); // Se ejecuta cuando el componente se monta
 
   const handleLogout = () => {
     // limpiar cualquier dato almacenado en localStorage o en el estado global
     navigate("/login"); // Redirige a la página de login
   };
-
-  // const handleVisualizar = (expediente) => {
-  //   console.log("Visualizar expediente:", expediente);
-  // };
 
   const handleVisualizar = async (expediente) => {
     try {
@@ -145,10 +144,18 @@ const FinalizadosPage = () => {
 
   const handleEliminar = async () => {
     try {
+      // Eliminar la carpeta utilizando el ID
       await axios.delete("http://localhost:3000/delete-folder", {
-        data: { Nombre_expediente: folderToDelete.Nombre_expediente }
+        // headers: { 'Content-Type': 'application/json' },
+        data: { Id_carpeta: folderToDelete.Id_carpeta }, // Enviamos el ID aquí
       });
-      setFolders(folders.filter(folder => folder.Nombre_expediente !== folderToDelete.Nombre_expediente));
+
+      // Actualiza la lista de carpetas eliminando la que fue borrada
+      setFolders(
+        folders.filter(
+          (folder) => folder.Id_carpeta !== folderToDelete.Id_carpeta
+        )
+      );
       handleCloseEliminar();
       alert("Carpeta eliminada exitosamente.");
     } catch (error) {
@@ -195,7 +202,7 @@ const FinalizadosPage = () => {
 
   return (
     <div className="finalizados-container">
-            <Container sx={{ paddingTop: 4 }}>
+      <Container sx={{ paddingTop: 4 }}>
         <Box
           sx={{
             display: "flex",
@@ -222,7 +229,7 @@ const FinalizadosPage = () => {
             }}
           >
             <Typography variant="h4" sx={{ marginBottom: 2 }}>
-              Finalizados
+              {/* Finalizados */}
             </Typography>
             <TextField
               label="Buscar Expediente"
@@ -266,12 +273,17 @@ const FinalizadosPage = () => {
             <DataTable
               columns={columns}
               data={filteredFolders}
-              pagination             
+              pagination
               highlightOnHover
               fixedHeader
               fixedHeaderScrollHeight="50vh"
               responsive
               customStyles={{
+                table: {
+                  style: {
+                    height: "400px", // Altura fija para la tabla completa
+                  },
+                },
                 headCells: {
                   style: {
                     fontSize: "16px", // Tamaño de la fuente del encabezado
@@ -299,62 +311,60 @@ const FinalizadosPage = () => {
                 },
               }}
             />
-          
           </Box>
         </Box>
       </Container>
-
       <Dialog
-          open={openVisualizar}
-          onClose={handleCloseVisualizar}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>
-            Expediente: {selectedFolder?.Nombre_expediente}
-          </DialogTitle>
-          <DialogContent>
-            {selectedFiles.length > 0 ? (
-              <TableContainer component={Paper}>
-                <Table>
-                  <TableBody>
-                    {selectedFiles.map((file, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{file}</TableCell>
-                        <TableCell>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => handleOpenFile(file)}
-                          >
-                            Abrir
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            ) : (
-              <Typography variant="h6" align="center" gutterBottom>
-                No hay archivos en este expediente.
-              </Typography>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseVisualizar}  color="primary">Cerrar</Button>
-          </DialogActions>
-        </Dialog>
-
-        <Dialog
-        open={openEliminar}
-        onClose={handleCloseEliminar}
+        open={openVisualizar}
+        onClose={handleCloseVisualizar}
+        maxWidth="sm"
+        fullWidth
       >
+        <DialogTitle>
+          Expediente: {selectedFolder?.Nombre_expediente}
+        </DialogTitle>
+        <DialogContent>
+          {selectedFiles.length > 0 ? (
+            <TableContainer component={Paper}>
+              <Table>
+                <TableBody>
+                  {selectedFiles.map((file, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{decodeURIComponent(escape(file))}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => handleOpenFile(file)}
+                        >
+                          Abrir
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ) : (
+            <Typography variant="h6" align="center" gutterBottom>
+              No hay archivos en este expediente.
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseVisualizar} color="primary">
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openEliminar} onClose={handleCloseEliminar}>
         <DialogTitle>Eliminar Carpeta</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            ¿Estás seguro de que deseas eliminar la carpeta{" "}
-            <strong>{folderToDelete?.Nombre_expediente}</strong>? Esta acción no se puede deshacer.
+            ¿Estás seguro de que deseas eliminar el expediente{" "}
+            <strong>{folderToDelete?.Nombre_expediente}</strong>? Esta acción no
+            se puede deshacer.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -366,7 +376,6 @@ const FinalizadosPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
     </div>
   );
 };
