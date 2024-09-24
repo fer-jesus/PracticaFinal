@@ -39,6 +39,7 @@ const ActivosPage = () => {
   const navigate = useNavigate();
   const [folders, setFolders] = useState([]);
   const [newFolderName, setNewFolderName] = useState("");
+  const [newFolderDescription, setNewFolderDescription] = useState('');
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [openVisualizar, setOpenVisualizar] = useState(false);
@@ -47,9 +48,8 @@ const ActivosPage = () => {
   const [openCambiarEstado, setOpenCambiarEstado] = useState(false);
   const [nuevoEstado, setNuevoEstado] = useState("");
   const [folderToChange, setFolderToChange] = useState(null);
-  //const [file, setFile] = useState(null);
-  //const [destinationPath, setDestinationPath] = useState("");
-  //const [openEscanear, setOpenEscanear] = useState(false);
+  // const [destinationPath, setDestinationPath] = useState("");
+  // const [openEscanear, setOpenEscanear] = useState(false);
 
   // useEffect(() => {
   //   const fetchFolders = async () => {
@@ -100,6 +100,12 @@ const ActivosPage = () => {
       alert("El nombre de la carpeta no puede estar vacío.");
       return;
     }
+
+    if (!newFolderDescription.trim()) {
+      alert("La descripción de la carpeta no puede estar vacía.");
+      return;
+    }
+  
     try {
       // Selección del directorio
       const directoryHandle = await window.showDirectoryPicker();
@@ -127,7 +133,7 @@ const ActivosPage = () => {
        const response = await axios.post("http://localhost:3000/register-folder", {
         expediente: newFolderName,
         fecha: new Date().toISOString().split("T")[0],
-        descripcion: "Nueva carpeta",
+        descripcion: newFolderDescription,
         ruta: path, // Usar la ruta completa
         id_estado: 1,
       });
@@ -141,7 +147,7 @@ const ActivosPage = () => {
           Id_carpeta: prevFolders.length + 1,
           Nombre_expediente: newFolderName,
           Fecha_creación: new Date().toISOString().split("T")[0],
-          Descripción: "Nueva carpeta",
+          Descripción: newFolderDescription,
           handle: newFolderHandle,
           RutaExpediente: path, // Agrega la ruta completa al objeto de la carpeta
         },
@@ -258,44 +264,51 @@ const ActivosPage = () => {
   };
   
  
-  
-    const handleEscanear = (expediente) => {
-    console.log("Escanear expediente:", expediente);
+  const handleOpenEscanear = (expediente) => {
+    setSelectedFolder(expediente);
+    //setOpenEscanear(true);
+    // Abre la página de escaneo en una nueva pestaña
+    window.open('https://demo.dynamsoft.com/web-twain/', '_blank');
   };
-
-   // const handleOpenEscanear = () => setOpenEscanear(true);
-  // const handleCloseEscanear = () => setOpenEscanear(false);
-
-  // const handleOpenEscanear = () => setOpenEscanear(true);
-
-
-  // const handleEscanear = async () => {
-  //   const formData = new FormData();
-  //   formData.append("file", file);
-  //   formData.append("destinationPath", destinationPath);
-
-  //   try {
-  //     const response = await axios.post("http://localhost:3000/scan-expediente", formData, {
-  //       headers: {
-  //         "Content-Type": "multipart/form-data"
-  //       }
-  //     });
-  //     alert(response.data.message);
-  //     handleCloseEscanear();
-  //   } catch (error) {
-  //     console.error("Error al escanear el expediente:", error);
-  //     alert("Error al escanear el expediente.");
+  
+  // const handleCloseEscanear = () => {
+  //   setOpenEscanear(false);
+  // };
+  
+  // const handleDestinationChange = (e) => {
+  //   setDestinationPath(e.target.value);
+  // };
+  
+  // const handleFileChange = (e) => {
+  //   setSelectedFiles(e.target.files[0]); // Guardamos el primer archivo seleccionado
+  // };
+  
+  // const handleScanner = (rutaArchivo) => {
+  //   if (!rutaArchivo || !selectedFolder) {
+  //     alert('Por favor, selecciona una ruta de archivo válida.');
+  //     return;
   //   }
+  
+  //   // Aquí enviamos la ruta del archivo escaneado y el expediente seleccionado al backend para guardarlo
+  //   fetch('http://localhost:3000/escanear', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({
+  //       expedienteId: selectedFolder.id,
+  //       filePath: rutaArchivo, // Esta ruta la obtendrás de la herramienta de escaneo
+  //     }),
+  //   })
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       console.log("Datos recibidos del servidor:", data);
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error al guardar el escaneo:', error);
+  //     });
   // };
-
-    // const handleImportarArchivos = (folder) => {
-  //   console.log(
-  //     "Importando archivos para el expediente:",
-  //     folder.Nombre_expediente
-  //   );
-   
-  // };
-
+  
   const handleImportarArchivos = async (folder) => {
     try {
       const fileInput = document.createElement("input");
@@ -348,17 +361,20 @@ const ActivosPage = () => {
       name: "Expediente",
       selector: (row) => row.Nombre_expediente,
       sortable: true,
+      minWidth: "250px",
     },
     {
       name: "Fecha",
       selector: (row) =>
         new Date(row.Fecha_creación).toISOString().split("T")[0],
       sortable: true,
+      width: "150px",
     },
     {
       name: "Descripción",
-      selector: (row) => row.Descripción,
+      selector: (row) => row.Descripción || "Sin descripción",
       sortable: true,
+      minWidth: "250px",
     },
     {
       name: "Acciones",
@@ -373,7 +389,7 @@ const ActivosPage = () => {
             <CompareArrows />
           </IconButton>
 
-          <IconButton onClick={handleEscanear} color="primary">
+          <IconButton onClick ={() => handleOpenEscanear(row)} color="primary">
             <Scanner />
           </IconButton>
           <IconButton onClick={() => handleImportarArchivos(row)} color="primary">
@@ -382,6 +398,7 @@ const ActivosPage = () => {
 
         </ButtonGroup>
       ),
+      width: "200px",
     },
   ];
 
@@ -522,6 +539,15 @@ const ActivosPage = () => {
               onChange={(e) => setNewFolderName(e.target.value)}
               sx={{ marginTop: 2 }}
             />
+            <TextField
+              margin="dense"
+              label="Descripción"
+              fullWidth
+              variant="outlined"
+              value={newFolderDescription}
+              onChange={(e) => setNewFolderDescription(e.target.value)}
+              sx={{ marginTop: 2 }}
+            />
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Cancelar</Button>
@@ -605,37 +631,34 @@ const ActivosPage = () => {
           </DialogActions>
         </Dialog>
 
-        {/* <Dialog
-          open={openEscanear}
-          onClose={handleCloseEscanear}
-        >
-          <DialogTitle>Escanear Expediente</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Selecciona el archivo y especifica la ubicación donde deseas guardarlo.
-            </DialogContentText>
-            <TextField
-              margin="dense"
-              label="Ruta de destino"
-              fullWidth
-              variant="outlined"
-              value={destinationPath}
-              onChange={handleDestinationChange}
-              sx={{ marginTop: 2 }}
-            />
-            <input
-              type="file"
-              onChange={handleFileChange}
-              style={{ marginTop: 16, width: "100%" }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseEscanear}>Cancelar</Button>
-            <Button onClick={handleEscanear} color="primary">
-              Escanear
-            </Button>
-          </DialogActions>
-        </Dialog> */}
+        {/* <Dialog open={openEscanear} onClose={handleCloseEscanear}>
+  <DialogTitle>Escanear Expediente</DialogTitle>
+  <DialogContent>
+    <DialogContentText>
+      Selecciona el archivo escaneado y especifica la ubicación donde deseas guardarlo.
+    </DialogContentText>
+    <TextField
+      margin="dense"
+      label="Ruta de destino"
+      fullWidth
+      variant="outlined"
+      value={destinationPath}
+      onChange={handleDestinationChange}
+      sx={{ marginTop: 2 }}
+    />
+    <input
+      type="file"
+      onChange={handleFileChange}
+      style={{ marginTop: 16, width: '100%' }}
+    />
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={handleCloseEscanear}>Cancelar</Button>
+    <Button onClick={handleEscanear} color="primary">
+      Guardar Escaneo
+    </Button>
+  </DialogActions>
+</Dialog> */}
       </Container>
     </div>
   );

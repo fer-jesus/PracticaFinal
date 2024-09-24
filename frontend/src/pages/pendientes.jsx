@@ -172,17 +172,20 @@ const PendientesPage = () => {
       name: "Expediente",
       selector: (row) => row.Nombre_expediente,
       sortable: true,
+      minWidth: "250px",
     },
     {
       name: "Fecha",
       selector: (row) =>
         new Date(row.Fecha_creación).toISOString().split("T")[0],
       sortable: true,
+      width: "150px",
     },
     {
       name: "Descripción",
       selector: (row) => row.Descripción,
       sortable: true,
+      minWidth: "250px",
     },
     {
       name: "Acciones",
@@ -196,6 +199,7 @@ const PendientesPage = () => {
           </IconButton>
         </ButtonGroup>
       ),
+      width: "200px",
     },
   ];
 

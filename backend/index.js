@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt'); // Importa bcrypt para el hash de contraseñas
 const db = require('./database'); // Importa la configuración de la base de datos
 const fs = require('fs'); // Importa el módulo fs para el manejo del sistema de archivos
 const path = require('path'); // Importa el módulo path para manejar rutas de archivos
-//const multer = require('multer');//Importa el modulo multer para subir archivos
+///const multer = require('multer');//Importa el modulo multer para subir archivos
 const fileUpload = require('express-fileupload');
 
 const app = express();
@@ -306,37 +306,28 @@ app.put('/cambiarEstado', (req, res) => {
   });
 });
 
-// // Endpoint para manejar la carga de archivos
-// app.post('/scan-expediente', upload.single('file'), (req, res) => {
-//   try {
-//     if (!req.file) {
-//       return res.status(400).json({ error: 'No se ha cargado ningún archivo' });
-//     }
+// // Ruta para escanear archivos
+// app.post('/escanear', (req, res) => {
+//   const file = req.files?.file;
+//   const destinationPath = req.body.destinationPath;
 
-//     const { expediente, destinationPath } = req.body;
-
-//     if (!destinationPath) {
-//       return res.status(400).json({ error: 'No se especificó una ruta de destino' });
-//     }
-
-//     // Asegúrate de que la carpeta de destino existe
-//     if (!fs.existsSync(destinationPath)) {
-//       fs.mkdirSync(destinationPath, { recursive: true });
-//     }
-
-//     // Ruta del archivo cargado
-//     const tempFilePath = path.join(__dirname, 'temp', req.file.filename);
-//     const destinationFilePath = path.join(destinationPath, req.file.filename);
-
-//     // Mueve el archivo de la carpeta temporal a la ruta especificada
-//     fs.renameSync(tempFilePath, destinationFilePath);
-
-//     res.status(200).json({ message: 'Archivo escaneado y guardado con éxito', file: destinationFilePath });
-
-//   } catch (error) {
-//     console.error('Error al escanear el documento:', error);
-//     res.status(500).json({ error: 'Error al escanear el documento' });
+//   if (!file) {
+//     return res.status(400).json({ error: 'No se ha proporcionado ningún archivo' });
 //   }
+
+//   // Asegúrate de que la ruta de destino exista
+//   if (!fs.existsSync(destinationPath)) {
+//     return res.status(400).json({ error: 'La ruta especificada no existe.' });
+//   }
+
+//   // Guarda el archivo en la ruta de destino
+//   const filePath = path.join(destinationPath, file.name);
+//   file.mv(filePath, (err) => {
+//     if (err) {
+//       return res.status(500).json({ error: 'Error al guardar el archivo' });
+//     }
+//     res.status(200).json({ message: 'Archivo escaneado guardado exitosamente', filePath });
+//   });
 // });
 
 // Ruta para subir archivos al expediente seleccionado
