@@ -32,6 +32,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import axios from "axios";
+//import { saveAs } from "file-saver"; desinstarlar file-saver
 import StateButtons from "../components/StateButtons";
 import "../styles/estados.css";
 
@@ -39,7 +40,7 @@ const ActivosPage = () => {
   const navigate = useNavigate();
   const [folders, setFolders] = useState([]);
   const [newFolderName, setNewFolderName] = useState("");
-  const [newFolderDescription, setNewFolderDescription] = useState('');
+  const [newFolderDescription, setNewFolderDescription] = useState("");
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [openVisualizar, setOpenVisualizar] = useState(false);
@@ -50,6 +51,8 @@ const ActivosPage = () => {
   const [folderToChange, setFolderToChange] = useState(null);
   // const [destinationPath, setDestinationPath] = useState("");
   // const [openEscanear, setOpenEscanear] = useState(false);
+  
+
 
   // useEffect(() => {
   //   const fetchFolders = async () => {
@@ -61,13 +64,15 @@ const ActivosPage = () => {
   //       alert("Error al obtener las carpetas.");
   //     }
   //   };
-    
+
   //   fetchFolders();
   // }, []);
 
   const fetchFolders = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/get-folders/Activos");
+      const response = await axios.get(
+        "http://localhost:3000/get-folders/Activos"
+      );
       console.log(response.data);
       setFolders(response.data);
     } catch (error) {
@@ -79,7 +84,7 @@ const ActivosPage = () => {
   useEffect(() => {
     fetchFolders();
   }, []);
-  
+
   const handleLogout = () => {
     navigate("/login");
   };
@@ -105,7 +110,7 @@ const ActivosPage = () => {
       alert("La descripción de la carpeta no puede estar vacía.");
       return;
     }
-  
+
     try {
       // Selección del directorio
       const directoryHandle = await window.showDirectoryPicker();
@@ -115,13 +120,13 @@ const ActivosPage = () => {
       let path = `C:\\Users\\JFGL\\Desktop\\Expedientes\\${pathRelativo}`;
 
       // Verificar si la carpeta ya existe en el sistema de archivos
-    try {
-      await directoryHandle.getDirectoryHandle(newFolderName);
-      alert("Ya existe una carpeta con este nombre.");
-      return;
-    } catch (error) {
-      // Si la carpeta no existe, continua con la creación
-    }
+      try {
+        await directoryHandle.getDirectoryHandle(newFolderName);
+        alert("Ya existe una carpeta con este nombre.");
+        return;
+      } catch (error) {
+        // Si la carpeta no existe, continua con la creación
+      }
 
       // Crea la nueva carpeta en el directorio seleccionado
       const newFolderHandle = await directoryHandle.getDirectoryHandle(
@@ -129,35 +134,38 @@ const ActivosPage = () => {
         { create: true }
       );
 
-       // Registra la nueva carpeta en la base de datos
-       const response = await axios.post("http://localhost:3000/register-folder", {
-        expediente: newFolderName,
-        fecha: new Date().toISOString().split("T")[0],
-        descripcion: newFolderDescription,
-        ruta: path, // Usar la ruta completa
-        id_estado: 1,
-      });
+      // Registra la nueva carpeta en la base de datos
+      const response = await axios.post(
+        "http://localhost:3000/register-folder",
+        {
+          expediente: newFolderName,
+          fecha: new Date().toISOString().split("T")[0],
+          descripcion: newFolderDescription,
+          ruta: path, // Usar la ruta completa
+          id_estado: 1,
+        }
+      );
 
       if (response.status === 200) {
         // Solo actualiza el estado de la UI si la carpeta se registró correctamente en la base de datos
-      // Agrega la nueva carpeta a la lista de folders
-      setFolders(prevFolders =>[
-        ...prevFolders,
-        {
-          Id_carpeta: prevFolders.length + 1,
-          Nombre_expediente: newFolderName,
-          Fecha_creación: new Date().toISOString().split("T")[0],
-          Descripción: newFolderDescription,
-          handle: newFolderHandle,
-          RutaExpediente: path, // Agrega la ruta completa al objeto de la carpeta
-        },
-      ]);
+        // Agrega la nueva carpeta a la lista de folders
+        setFolders((prevFolders) => [
+          ...prevFolders,
+          {
+            Id_carpeta: prevFolders.length + 1,
+            Nombre_expediente: newFolderName,
+            Fecha_creación: new Date().toISOString().split("T")[0],
+            Descripción: newFolderDescription,
+            handle: newFolderHandle,
+            RutaExpediente: path, // Agrega la ruta completa al objeto de la carpeta
+          },
+        ]);
 
-      fetchFolders();//actualiza la lista de carpetas
-      handleClose();
-    }else{
-      alert("Error al registrar la carpeta.");
-    }
+        fetchFolders(); //actualiza la lista de carpetas
+        handleClose();
+      } else {
+        alert("Error al registrar la carpeta.");
+      }
     } catch (error) {
       console.error("Error al crear la carpeta:", error);
       alert("Error al crear la carpeta");
@@ -237,58 +245,56 @@ const ActivosPage = () => {
       alert("Seleccione una carpeta y un estado válido.");
       return;
     }
-  
+
     try {
- // Realiza la solicitud PUT para cambiar el estado de la carpeta
+      // Realiza la solicitud PUT para cambiar el estado de la carpeta
       await axios.put("http://localhost:3000/cambiarEstado", {
-        idCarpeta: folderToChange.Id_carpeta,// Enviar el ID correcto de la carpeta
+        idCarpeta: folderToChange.Id_carpeta, // Enviar el ID correcto de la carpeta
         nuevoEstado, // Enviar el nuevo estado a la ruta
+        //fechaCambioEstado: new Date().toISOString().split("T")[0],
       });
-  
+
       alert("El estado ha sido cambiado exitosamente y la carpeta fue movida.");
+      fetchFolders(); //// Vuelve a cargar las carpetas de activos actualizadas
       setOpenCambiarEstado(false);
       setFolderToChange(null);
       setNuevoEstado("");
-
-      fetchFolders();//// Vuelve a cargar las carpetas de activos actualizadas
-      
     } catch (error) {
       console.error("Error al cambiar el estado:", error);
       alert("Error al cambiar el estado del expediente.");
     }
   };
-  
+
   const handleOpenCambiarEstado = (folder) => {
-    setFolderToChange(folder);// Establece la carpeta seleccionada
+    setFolderToChange(folder); // Establece la carpeta seleccionada
     setOpenCambiarEstado(true);
   };
-  
- 
+
   const handleOpenEscanear = (expediente) => {
     setSelectedFolder(expediente);
     //setOpenEscanear(true);
     // Abre la página de escaneo en una nueva pestaña
-    window.open('https://demo.dynamsoft.com/web-twain/', '_blank');
+    window.open("https://demo.dynamsoft.com/web-twain/", "_blank");
   };
-  
+
   // const handleCloseEscanear = () => {
   //   setOpenEscanear(false);
   // };
-  
+
   // const handleDestinationChange = (e) => {
   //   setDestinationPath(e.target.value);
   // };
-  
+
   // const handleFileChange = (e) => {
   //   setSelectedFiles(e.target.files[0]); // Guardamos el primer archivo seleccionado
   // };
-  
+
   // const handleScanner = (rutaArchivo) => {
   //   if (!rutaArchivo || !selectedFolder) {
   //     alert('Por favor, selecciona una ruta de archivo válida.');
   //     return;
   //   }
-  
+
   //   // Aquí enviamos la ruta del archivo escaneado y el expediente seleccionado al backend para guardarlo
   //   fetch('http://localhost:3000/escanear', {
   //     method: 'POST',
@@ -308,13 +314,13 @@ const ActivosPage = () => {
   //       console.error('Error al guardar el escaneo:', error);
   //     });
   // };
-  
+
   const handleImportarArchivos = async (folder) => {
     try {
       const fileInput = document.createElement("input");
       fileInput.type = "file";
       fileInput.multiple = true; // Permite múltiples archivos
-  
+
       // Cuando se seleccionan los archivos
       fileInput.onchange = async (event) => {
         const files = event.target.files;
@@ -322,31 +328,49 @@ const ActivosPage = () => {
           alert("No se seleccionaron archivos.");
           return;
         }
-  
+
         const formData = new FormData();
         Array.from(files).forEach((file) => formData.append("files", file));
         formData.append("carpetaId", folder.Id_carpeta);
 
         try {
-          const response = await axios.post("http://localhost:3000/upload-file", formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          });
-  
+          const response = await axios.post(
+            "http://localhost:3000/upload-file",
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+
           alert(response.data.message);
-          fetchFolders();//actualiza la lista de carpetas
+          fetchFolders(); //actualiza la lista de carpetas
         } catch (error) {
           console.error("Error al subir archivos:", error);
           alert("Error al subir archivos.");
         }
       };
-  
+
       // Abre el diálogo de selección de archivos
       fileInput.click();
     } catch (error) {
       console.error("Error al subir archivos:", error);
       alert("Error al subir archivos.");
+    }
+  };
+
+  const handleReporteActivos = () => {
+
+    const nombreUsuario = localStorage.getItem("nombreUsuario");
+
+    const newTab = window.open(
+      `http://localhost:3000/reporte-estados/Activos?usuario=${encodeURIComponent(nombreUsuario)}`,
+    "_blank"
+    );
+
+    if (newTab) {
+      newTab.document.title = "Reporte Expedientes Activos";
     }
   };
 
@@ -365,8 +389,15 @@ const ActivosPage = () => {
     },
     {
       name: "Fecha",
-      selector: (row) =>
-        new Date(row.Fecha_creación).toISOString().split("T")[0],
+      selector: (row) => {
+        // new Date(row.Fecha_creación).toISOString().split("T")[0],
+        // Si el expediente fue movido a "Activo" desde otro estado, muestra la fecha de cambio
+        if (row.Fecha_cambioEstado) {
+          return new Date(row.Fecha_cambioEstado).toISOString().split("T")[0];
+        }
+        // Si no, muestra la fecha de creación
+        return new Date(row.Fecha_creación).toISOString().split("T")[0];
+      },
       sortable: true,
       width: "150px",
     },
@@ -380,22 +411,31 @@ const ActivosPage = () => {
       name: "Acciones",
       cell: (row) => (
         <ButtonGroup variant="contained">
-          <IconButton onClick={() => handleVisualizar(row) } color="primary">
+          <IconButton
+            onClick={() => handleVisualizar(row)}
+            sx={{ color: "#171F4D" }}
+          >
             <Visibility />
           </IconButton>
           <IconButton
-            onClick={() => handleOpenCambiarEstado(row) } color="primary"
+            onClick={() => handleOpenCambiarEstado(row)}
+            sx={{ color: "#171F4D" }}
           >
             <CompareArrows />
           </IconButton>
 
-          <IconButton onClick ={() => handleOpenEscanear(row)} color="primary">
+          <IconButton
+            onClick={() => handleOpenEscanear(row)}
+            sx={{ color: "#171F4D" }}
+          >
             <Scanner />
           </IconButton>
-          <IconButton onClick={() => handleImportarArchivos(row)} color="primary">
+          <IconButton
+            onClick={() => handleImportarArchivos(row)}
+            sx={{ color: "#171F4D" }}
+          >
             <FileUpload />
           </IconButton>
-
         </ButtonGroup>
       ),
       width: "200px",
@@ -404,7 +444,7 @@ const ActivosPage = () => {
 
   return (
     <div className="activo-container">
-      <Container sx={{ paddingTop: 4 }}>
+      <Container sx={{ paddingTop: 4, height: "100vh", overflowY: "auto" }}>
         <Box
           sx={{
             display: "flex",
@@ -415,9 +455,21 @@ const ActivosPage = () => {
         >
           <Button
             variant="contained"
-            color="secondary"
+            //color="secondary"
             onClick={handleLogout}
-            sx={{ position: "absolute", top: 0, left: 45, margin: 4 }}
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 45,
+              margin: 4,
+              backgroundColor: "#ff0000",
+              fontWeight: "bold",
+              fontSize: "12px", 
+              padding: "6px 12px",
+              "&:hover": {
+                backgroundColor: "#cc0000", // Color para el hover, un poco más oscuro
+              },
+            }}
           >
             Cerrar Sesión
           </Button>
@@ -462,13 +514,24 @@ const ActivosPage = () => {
               fontSize: "0.875rem",
               padding: "6px 16px",
               minWidth: "100px",
+              fontWeight: "bold",
             }}
           />
           <Button
             variant="contained"
-            color="primary"
+            //color="primary"
             onClick={handleClickOpen}
-            sx={{ alignSelf: "flex-end", marginBottom: 2 }}
+            sx={{
+              alignSelf: "flex-end",
+              marginBottom: 2,
+              backgroundColor: "#171F4D",
+              fontWeight: "bold",
+              fontSize: "12px", 
+              padding: "6px 12px",
+              "&:hover": {
+                backgroundColor: "#0f1436", // Color para el hover, un poco más oscuro
+              },
+            }}
           >
             Nuevo
           </Button>
@@ -490,14 +553,14 @@ const ActivosPage = () => {
               customStyles={{
                 table: {
                   style: {
-                    height: "300px", // Altura fija para la tabla completa
+                    height: "500px", // Altura fija para la tabla completa
                   },
                 },
                 headCells: {
                   style: {
                     fontSize: "16px", // Tamaño de la fuente del encabezado
                     fontWeight: "bold", // Negrita en el encabezado
-                    backgroundColor: "#f5f5f5", // Color de fondo del encabezado
+                    backgroundColor: "#d3d3d3", // Color de fondo del encabezado
                     borderBottom: "2px solid #e0e0e0", // Línea en la parte inferior del encabezado
                     textAlign: "left", // Alinea el texto a la izquierda
                   },
@@ -509,9 +572,12 @@ const ActivosPage = () => {
                 },
                 pagination: {
                   style: {
-                    borderTop: "1px solid #e0e0e0", // Línea en la parte superior de la paginación
+                    backgroundColor: "#e8e8e8", // Color gris para la paginación
+                    fontSize: "15px", // Tamaño de la fuente de la paginación (puedes ajustar esto)
+                    height: "5px",
                   },
                 },
+
                 // Elimina el triángulo de ordenamiento
                 sortIcon: {
                   style: {
@@ -522,6 +588,24 @@ const ActivosPage = () => {
             />
           </Box>
         </Box>
+
+        <Button
+          variant="contained"
+          //color="secondary"
+          onClick={handleReporteActivos} // Función que manejará el evento al hacer clic en el botón
+          sx={{
+            marginTop: 8,
+            fontSize: "12px", 
+            padding: "6px 12px",
+            backgroundColor: "#171F4D",
+            "&:hover": {
+              backgroundColor: "#0f1436", // Color para el hover, un poco más oscuro
+            },
+          }}
+        >
+          Generar reporte
+        </Button>
+
         <Dialog open={open} onClose={handleClose}>
           <DialogTitle>Crear nueva carpeta</DialogTitle>
           <DialogContent>
@@ -571,7 +655,9 @@ const ActivosPage = () => {
                   <TableBody>
                     {selectedFiles.map((file, index) => (
                       <TableRow key={index}>
-                        <TableCell>{decodeURIComponent(escape(file))}</TableCell>
+                        <TableCell>
+                          {decodeURIComponent(escape(file))}
+                        </TableCell>
                         <TableCell>
                           <Button
                             variant="contained"
@@ -665,4 +751,3 @@ const ActivosPage = () => {
 };
 
 export default ActivosPage;
-

@@ -17,7 +17,7 @@ import {
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import logoBufete from "../assets/Bufete-popular.png"; 
+import logoBufete from "../assets/Bufete-popular.png";
 //import logoUSAC from "../assets/Usac_logo.png";
 
 const LoginPage = () => {
@@ -45,7 +45,11 @@ const LoginPage = () => {
 
       if (response.status === 200) {
         console.log("Login exitoso");
-        navigate('/menu');
+
+        // Almacena el nombre de usuario en localStorage o sessionStorage
+        localStorage.setItem("nombreUsuario", user);
+
+        navigate("/menu");
       }
     } catch (error) {
       if (error.response && error.response.status === 400) {
@@ -77,7 +81,7 @@ const LoginPage = () => {
     <div className="login-container">
       {/* <img src={logoUSAC} alt="Logo USAC" className="logo-usac" /> */}
       <img src={logoBufete} alt="Logo Bufete" className="logo-bufete" />
-     
+
       <Container component="main" maxWidth="xs">
         <Paper elevation={3} sx={{ padding: 4 }}>
           <Box
@@ -93,7 +97,15 @@ const LoginPage = () => {
             <Typography component="h1" variant="h5">
               Iniciar Sesión
             </Typography>
-            <Box component="form" sx={{ mt: 1 }}>
+            <Box
+              component="form"
+              sx={{
+                mt: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
               <TextField
                 variant="outlined"
                 margin="normal"
@@ -110,7 +122,7 @@ const LoginPage = () => {
                   setErrorUser(false);
                 }}
                 error={errorUser}
-                helperText={errorUser ? "Este campo no puede estar vacío" : ""}            
+                helperText={errorUser ? "Este campo no puede estar vacío" : ""}
               />
               <TextField
                 variant="outlined"
@@ -129,7 +141,9 @@ const LoginPage = () => {
                 }}
                 inputRef={passwordRef}
                 error={errorPassword}
-                helperText={errorPassword ? "Este campo no puede estar vacío" : ""}
+                helperText={
+                  errorPassword ? "Este campo no puede estar vacío" : ""
+                }
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -146,20 +160,25 @@ const LoginPage = () => {
               />
               <Button
                 type="button"
-                fullWidth
                 variant="contained"
-                color="primary"
-                sx={{ mt: 3, mb: 2 }}
+                sx={{
+                  mt: 3,
+                  mb: 2,
+                  backgroundColor: "#171F4D",
+                  width: "150px",
+                  fontWeight: "bold",
+                  alignSelf: "center",
+                  "&:hover": {
+                    backgroundColor: "#0f1436",
+                  },
+                }}
                 onClick={handleLogin}
               >
                 Iniciar Sesión
               </Button>
               <Grid container>
                 <Grid item>
-                  <Button
-                    variant="body2"
-                    onClick={() => navigate('/register')}
-                  >
+                  <Button variant="body2" onClick={() => navigate("/register")}>
                     {"¿No tienes una cuenta? Regístrate"}
                   </Button>
                 </Grid>

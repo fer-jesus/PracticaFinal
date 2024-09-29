@@ -7,6 +7,9 @@ const fs = require('fs'); // Importa el módulo fs para el manejo del sistema de
 const path = require('path'); // Importa el módulo path para manejar rutas de archivos
 ///const multer = require('multer');//Importa el modulo multer para subir archivos
 const fileUpload = require('express-fileupload');
+//const pdfDocument = require('pdfkit');
+const { jsPDF } = require('jspdf');
+ require('jspdf-autotable');
 
 const app = express();
 const PORT = 3000;
@@ -16,6 +19,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json()); // Para parsear el cuerpo de las solicitudes en formato JSON
 app.use(fileUpload()); // Middleware para manejar archivos
+//app.use('/public', express.static(path.join(__dirname, 'public')));
 
 const rutasEstados = {
   'Activos': 'C:\\Users\\JFGL\\Desktop\\Expedientes\\Activos',
@@ -121,7 +125,7 @@ app.get('/get-folders/:estado', (req, res) => {
   const { estado } = req.params;
   console.log('Estado recibido:', estado);
   const query = `
-    SELECT C.Id_carpeta, C.Nombre_expediente, C.Fecha_creación, C.Descripción, C.RutaExpediente
+    SELECT C.Id_carpeta, C.Nombre_expediente, C.Fecha_creación, C.Descripción, C.RutaExpediente, CE.Fecha_cambioEstado
     FROM CARPETA C
     INNER JOIN CARPETA_ESTADO CE ON C.Id_carpeta = CE.Id_carpeta
     INNER JOIN ESTADO E ON CE.Id_estado = E.Id_estado
@@ -289,10 +293,18 @@ app.put('/cambiarEstado', (req, res) => {
             return res.status(500).json({ error: 'Error al actualizar la ruta en la base de datos' });
           }
 
-          // Actualizar la tabla CARPETA_ESTADO
-          const actualizarCarpetaEstadoQuery = `UPDATE CARPETA_ESTADO SET Id_estado = ? WHERE Id_carpeta = ?`;
+          // Actualizar la tabla CARPETA_ESTADO con la nueva fecha y el estado
+          //const actualizarCarpetaEstadoQuery = `UPDATE CARPETA_ESTADO SET Id_estado = ? WHERE Id_carpeta = ?`;
+          const actualizarCarpetaEstadoQuery = `
+            UPDATE CARPETA_ESTADO 
+            SET Id_estado = ?, Fecha_cambioEstado = ? 
+            WHERE Id_carpeta = ?
+          `;
 
-          db.query(actualizarCarpetaEstadoQuery, [idNuevoEstado, idCarpeta], (err) => {
+          // Obtener la fecha actual
+          const fechaCambioEstado = new Date();
+
+          db.query(actualizarCarpetaEstadoQuery, [idNuevoEstado, fechaCambioEstado, idCarpeta], (err) => {
             if (err) {
               console.error('Error al actualizar el estado de la carpeta:', err);
               return res.status(500).json({ error: 'Error al actualizar el estado en la base de datos' });
@@ -404,6 +416,17 @@ app.delete('/delete-folder', (req, res) => {
     const folderPath = results[0].RutaExpediente;
     console.log('Ruta del expediente:', folderPath);
 
+    // Definir la ruta de backup
+    const backupDir = 'C:/Users/JFGL/Desktop/Expedientes/Eliminados';
+    const folderName = path.basename(folderPath); // Obtener el nombre de la carpeta
+    const backupPath = path.join(backupDir, folderName); // Crear la ruta de backup
+
+    // Copiar la carpeta al directorio de "Eliminados" antes de eliminarla
+    fs.promises.mkdir(backupDir, { recursive: true }) // Crear el directorio si no existe
+      .then(() => fs.promises.rename(folderPath, backupPath)) // Mover la carpeta a "Eliminados"
+      .then(() => {
+        console.log(`Carpeta respaldada en ${backupPath}`);
+
     // Eliminar las entradas relacionadas en CARPETA_ESTADO
     const deleteRelatedQuery = 'DELETE FROM CARPETA_ESTADO WHERE Id_carpeta = ?';
     db.query(deleteRelatedQuery, [Id_carpeta], (err, relatedResults) => {
@@ -425,17 +448,104 @@ app.delete('/delete-folder', (req, res) => {
           return res.status(404).json({ error: 'Carpeta no encontrada en la base de datos' });
         }
 
-        // Si la carpeta se eliminó de la base de datos, eliminar del sistema de archivos
-        fs.rmdir(folderPath, { recursive: true }, (err) => {
-          if (err) {
-            console.error('Error al eliminar la carpeta del sistema de archivos:', err);
-            return res.status(500).json({ error: 'Error al eliminar la carpeta del sistema de archivos' });
-          }
+        // // Si la carpeta se eliminó de la base de datos, eliminar del sistema de archivos
+        // fs.rmdir(folderPath, { recursive: true }, (err) => {
+        //   if (err) {
+        //     console.error('Error al eliminar la carpeta del sistema de archivos:', err);
+        //     return res.status(500).json({ error: 'Error al eliminar la carpeta del sistema de archivos' });
+        //   }
 
           res.status(200).json({ message: 'Carpeta eliminada exitosamente' });
         });
       });
+    })
+    .catch((err) => {
+      console.error('Error al respaldar la carpeta:', err);
+      res.status(500).json({ error: 'Error al respaldar la carpeta' });
     });
+  });
+});
+
+//ruta para generar los reportes
+app.get('/reporte-estados/:estado', (req, res) => {
+  const { estado } = req.params;
+  const { usuario } = req.query;
+
+  // Obtener la fecha actual y hora actual
+  const fechaReporte = new Date().toLocaleDateString(); // Fecha actual del sistema
+  const horaActual = new Date().toLocaleTimeString();
+
+  const query = `
+    SELECT C.Id_carpeta, C.Nombre_expediente, C.Fecha_creación, CE.Fecha_cambioEstado, C.Descripción
+    FROM CARPETA C
+    INNER JOIN CARPETA_ESTADO CE ON C.Id_carpeta = CE.Id_carpeta
+    INNER JOIN ESTADO E ON CE.Id_estado = E.Id_estado
+    WHERE LOWER(E.Nombre_estado) = ?
+  `;
+
+  db.query(query, [estado], (err, results) => {
+    if (err) {
+      console.error('Error al obtener los datos para el reporte:', err);
+      return res.status(500).json({ error: 'Error al obtener los datos para el reporte.' });
+    }
+
+    // Crea el documento PDF usando jsPDF
+    const doc = new jsPDF();
+
+    // Agregar la imagen al PDF
+    const imagePath = path.join(__dirname, 'public/images/Bufete-popular.png'); // Ruta de la imagen
+    const imgData = fs.readFileSync(imagePath).toString('base64'); // Leer la imagen en base64
+    doc.addImage(imgData, 'PNG', 10, 10, 40, 25); // Ajusta las coordenadas y el tamaño según sea necesario
+
+
+    // Título del reporte
+    const title = `Reporte de Expedientes ${estado.charAt(0).toUpperCase() + estado.slice(1)}`;
+    const titleWidth = doc.getStringUnitWidth(title) * doc.internal.getFontSize() / doc.internal.scaleFactor;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const x = (pageWidth - titleWidth) / 2; // Cálculo para centrar
+
+    doc.setFont('Arvo font', 'bold');
+    doc.setFontSize(18);
+    doc.text(title, x, 30);
+
+    // Preparar los datos para jsPDF AutoTable
+    const tableColumn = ["ID", "Nombre del Expediente", "FechaCreación", "FechaCE", "Descripción"];
+    const tableRows = [];
+
+    // Llena las filas con los resultados de la base de datos
+    results.forEach((expediente) => {
+      const expedienteData = [
+        expediente.Id_carpeta,
+        expediente.Nombre_expediente,
+        expediente.Fecha_creación ? new Date(expediente.Fecha_creación).toISOString().split("T")[0] : 'No disponible',
+        expediente.Fecha_cambioEstado ? new Date(expediente.Fecha_cambioEstado).toISOString().split("T")[0] : 'No disponible',
+        expediente.Descripción,
+      ];
+      tableRows.push(expedienteData);
+    });
+
+    // Inserta la tabla en el PDF usando jsPDF-AutoTable
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 38, // Posición inicial de la tabla
+      theme: 'grid', // Puedes cambiar el tema a 'grid', 'striped', o 'plain'
+      headStyles: { fillColor: [23, 31, 77], halign: 'center' }, // Color del encabezado
+      margin: { top: 10 }
+    });
+
+    //Fecha de generación del reporte con el usuario que lo generó
+    const fechaActual = new Date().toISOString().split("T")[0];
+    doc.setFontSize(12);
+    doc.text(`Generado por: ${usuario} | Fecha: ${fechaActual} | Hora: ${horaActual}`, 10, doc.internal.pageSize.getHeight() - 10);
+
+    // Establecer los encabezados HTTP para visualizar el archivo en lugar de descargarlo
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="Reporte_Expedientes_${estado.charAt(0).toUpperCase() + estado.slice(1)}.pdf"`);
+
+    // Enviar el PDF como respuesta
+    const pdfOutput = doc.output('arraybuffer');
+    res.send(Buffer.from(pdfOutput));
   });
 });
 

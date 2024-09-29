@@ -164,6 +164,20 @@ const FinalizadosPage = () => {
     }
   };
 
+  const handleReporteFinalizados = () => {
+
+    const nombreUsuario = localStorage.getItem("nombreUsuario");
+
+    const newTab = window.open(
+      `http://localhost:3000/reporte-estados/Finalizados?usuario=${encodeURIComponent(nombreUsuario)}`,
+    "_blank"
+    );
+    
+    if (newTab) {
+      newTab.document.title = "Reporte Expedientes Finalizados";
+    }
+  };
+
   const filteredFolders = folders.filter((folder) =>
     folder.Nombre_expediente.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -177,8 +191,12 @@ const FinalizadosPage = () => {
     },
     {
       name: "Fecha",
-      selector: (row) =>
-        new Date(row.Fecha_creación).toISOString().split("T")[0],
+      selector: (row) => {
+        //new Date(row.Fecha_creación).toISOString().split("T")[0],
+        return row.Fecha_cambioEstado
+          ? new Date(row.Fecha_cambioEstado).toISOString().split("T")[0]
+          : ""; // Si no hay fecha, no mostrar nada
+      },
       sortable: true,
       width: "150px",
     },
@@ -192,10 +210,14 @@ const FinalizadosPage = () => {
       name: "Acciones",
       cell: (row) => (
         <ButtonGroup variant="contained">
-          <IconButton onClick={() => handleVisualizar(row)} color="primary">
+          <IconButton onClick={() => handleVisualizar(row)} 
+          sx={{ color: "#171F4D" }}
+          >
             <Visibility />
           </IconButton>
-          <IconButton onClick={() => handleOpenEliminar(row)} color="primary">
+          <IconButton onClick={() => handleOpenEliminar(row)} 
+          sx={{ color: "#171F4D" }}
+          >
             <Delete />
           </IconButton>
         </ButtonGroup>
@@ -206,7 +228,7 @@ const FinalizadosPage = () => {
 
   return (
     <div className="finalizados-container">
-      <Container sx={{ paddingTop: 4 }}>
+      <Container sx={{ paddingTop: 4, height: "100vh", overflowY: "auto" }}>
         <Box
           sx={{
             display: "flex",
@@ -217,9 +239,17 @@ const FinalizadosPage = () => {
         >
           <Button
             variant="contained"
-            color="secondary"
+            //color="secondary"
             onClick={handleLogout}
-            sx={{ position: "absolute", top: 0, left: 45, margin: 4 }}
+            sx={{ position: "absolute", top: 0, left: 45, margin: 4,
+              backgroundColor: "#ff0000",
+              fontWeight: "bold",
+              fontSize: "12px", 
+              padding: "6px 12px",
+              "&:hover": {
+                backgroundColor: "#cc0000", 
+              },
+             }}
           >
             Cerrar Sesión
           </Button>
@@ -264,6 +294,7 @@ const FinalizadosPage = () => {
               fontSize: "0.875rem",
               padding: "6px 16px",
               minWidth: "100px",
+              fontWeight: "bold",
             }}
           />
           <Box
@@ -271,7 +302,7 @@ const FinalizadosPage = () => {
               width: "100%",
               height: "50vh",
               //overflowY: "auto",
-              marginTop: 2,
+              marginTop: 8,
             }}
           >
             <DataTable
@@ -285,14 +316,14 @@ const FinalizadosPage = () => {
               customStyles={{
                 table: {
                   style: {
-                    height: "400px", // Altura fija para la tabla completa
+                    height: "500px", // Altura fija para la tabla completa
                   },
                 },
                 headCells: {
                   style: {
                     fontSize: "16px", // Tamaño de la fuente del encabezado
                     fontWeight: "bold", // Negrita en el encabezado
-                    backgroundColor: "#f5f5f5", // Color de fondo del encabezado
+                    backgroundColor: "#d3d3d3", // Color de fondo del encabezado
                     borderBottom: "2px solid #e0e0e0", // Línea en la parte inferior del encabezado
                     textAlign: "left", // Alinea el texto a la izquierda
                   },
@@ -304,7 +335,9 @@ const FinalizadosPage = () => {
                 },
                 pagination: {
                   style: {
-                    borderTop: "1px solid #e0e0e0", // Línea en la parte superior de la paginación
+                    backgroundColor: "#e8e8e8", // Color gris para la paginación
+                    fontSize: "15px", // Tamaño de la fuente de la paginación (puedes ajustar esto)
+                    height: "5px",
                   },
                 },
                 // Elimina el triángulo de ordenamiento
@@ -317,6 +350,22 @@ const FinalizadosPage = () => {
             />
           </Box>
         </Box>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={handleReporteFinalizados} // Función que manejará el evento al hacer clic en el botón
+          sx={{ 
+            marginTop: 8,
+            fontSize: "12px", 
+            padding: "6px 12px",
+            backgroundColor: "#171F4D",
+              "&:hover": {
+                backgroundColor: "#0f1436", // Color para el hover, un poco más oscuro
+              },
+           }}
+        >
+          Generar reporte
+        </Button>
       </Container>
       <Dialog
         open={openVisualizar}

@@ -21,11 +21,7 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
-import {
-  Visibility,
-  CompareArrows,
-  Search,
-} from "@mui/icons-material";
+import { Visibility, CompareArrows, Search } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import StateButtons from "../components/StateButtons";
@@ -34,7 +30,7 @@ import "../styles/estados.css";
 
 const PendientesPage = () => {
   const navigate = useNavigate(); // Inicializa useNavigate
-   const [folders, setFolders] = useState([]); // Estado para las carpetas
+  const [folders, setFolders] = useState([]); // Estado para las carpetas
   const [searchQuery, setSearchQuery] = useState(""); // Estado para la búsqueda
   const [openVisualizar, setOpenVisualizar] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -42,24 +38,26 @@ const PendientesPage = () => {
   const [openCambiarEstado, setOpenCambiarEstado] = useState(false);
   const [nuevoEstado, setNuevoEstado] = useState("");
   const [folderToChange, setFolderToChange] = useState(null);
-  
+
   useEffect(() => {
     const fetchFolders = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/get-folders/Pendientes');
+        const response = await axios.get(
+          "http://localhost:3000/get-folders/Pendientes"
+        );
         //console.log(response.data);
         setFolders(response.data);
       } catch (error) {
         if (error.response && error.response.status === 404) {
           setFolders([]); // Si no hay carpetas, se establece una lista vacía
         } else {
-          console.error('Error al obtener las carpetas:', error);
+          console.error("Error al obtener las carpetas:", error);
         }
       }
     };
     fetchFolders();
   }, []);
-  
+
   const handleLogout = () => {
     //limpiar cualquier dato almacenado en localStorage o en el estado global
     navigate("/login"); // Redirige a la página de login
@@ -138,13 +136,14 @@ const PendientesPage = () => {
       alert("Seleccione una carpeta y un estado válido.");
       return;
     }
-  
+
     try {
       await axios.put("http://localhost:3000/cambiarEstado", {
-        idCarpeta: folderToChange.Id_carpeta,// Enviar el ID correcto de la carpeta
+        idCarpeta: folderToChange.Id_carpeta, // Enviar el ID correcto de la carpeta
         nuevoEstado, // Enviar el nuevo estado a la ruta
+        //fechaCambioEstado: new Date().toISOString().split("T")[0],
       });
-  
+
       alert("El estado ha sido cambiado exitosamente y la carpeta fue movida.");
       setOpenCambiarEstado(false);
       setFolderToChange(null);
@@ -157,12 +156,26 @@ const PendientesPage = () => {
       alert("Error al cambiar el estado del expediente.");
     }
   };
-  
+
   const handleOpenCambiarEstado = (folder) => {
-    setFolderToChange(folder);// Establece la carpeta seleccionada
+    setFolderToChange(folder); // Establece la carpeta seleccionada
     setOpenCambiarEstado(true);
   };
-  
+
+  const handleReportePendientes = () => {
+
+    const nombreUsuario = localStorage.getItem("nombreUsuario");
+
+    const newTab = window.open(
+      `http://localhost:3000/reporte-estados/Pendientes?usuario=${encodeURIComponent(nombreUsuario)}`,
+    "_blank"
+    );
+
+    if (newTab) {
+      newTab.document.title = "Reporte Expedientes Pendientes";
+    }
+  };
+
   const filteredFolders = folders.filter((folder) =>
     folder.Nombre_expediente.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -176,8 +189,13 @@ const PendientesPage = () => {
     },
     {
       name: "Fecha",
-      selector: (row) =>
-        new Date(row.Fecha_creación).toISOString().split("T")[0],
+      selector: (row) => {
+        //new Date(row.Fecha_creación).toISOString().split("T")[0],
+        // Mostrar solo la fecha de cambio de estado si existe
+        return row.Fecha_cambioEstado
+          ? new Date(row.Fecha_cambioEstado).toISOString().split("T")[0]
+          : ""; // Si no hay fecha, no mostrar nada
+      },
       sortable: true,
       width: "150px",
     },
@@ -191,10 +209,16 @@ const PendientesPage = () => {
       name: "Acciones",
       cell: (row) => (
         <ButtonGroup variant="contained">
-          <IconButton onClick={() => handleVisualizar(row)} color="primary">
+          <IconButton
+            onClick={() => handleVisualizar(row)}
+            sx={{ color: "#171F4D" }}
+          >
             <Visibility />
           </IconButton>
-          <IconButton onClick={() => handleOpenCambiarEstado(row)} color="primary">
+          <IconButton
+            onClick={() => handleOpenCambiarEstado(row)}
+            sx={{ color: "#171F4D" }}
+          >
             <CompareArrows />
           </IconButton>
         </ButtonGroup>
@@ -205,7 +229,7 @@ const PendientesPage = () => {
 
   return (
     <div className="pendientes-container">
-            <Container sx={{ paddingTop: 4 }}>
+      <Container sx={{ paddingTop: 4, height: "100vh", overflowY: "auto" }}>
         <Box
           sx={{
             display: "flex",
@@ -216,9 +240,20 @@ const PendientesPage = () => {
         >
           <Button
             variant="contained"
-            color="secondary"
             onClick={handleLogout}
-            sx={{ position: "absolute", top: 0, left: 45, margin: 4 }}
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 45,
+              margin: 4,
+              backgroundColor: "#ff0000",
+              fontWeight: "bold",
+              fontSize: "12px", 
+              padding: "6px 12px",
+              "&:hover": {
+                backgroundColor: "#cc0000", 
+              },
+            }}
           >
             Cerrar Sesión
           </Button>
@@ -263,21 +298,22 @@ const PendientesPage = () => {
               fontSize: "0.875rem",
               padding: "6px 16px",
               minWidth: "100px",
+              fontWeight: "bold",
             }}
           />
-          
+
           <Box
             sx={{
               width: "100%",
               height: "50vh",
               //overflowY: "auto",
-              marginTop: 2,
+              marginTop: 8,
             }}
           >
             <DataTable
               columns={columns}
               data={filteredFolders}
-              pagination             
+              pagination
               highlightOnHover
               fixedHeader
               fixedHeaderScrollHeight="50vh"
@@ -285,14 +321,14 @@ const PendientesPage = () => {
               customStyles={{
                 table: {
                   style: {
-                    height: "400px", // Altura fija para la tabla completa
+                    height: "500px", // Altura fija para la tabla completa
                   },
                 },
                 headCells: {
                   style: {
                     fontSize: "16px", // Tamaño de la fuente del encabezado
                     fontWeight: "bold", // Negrita en el encabezado
-                    backgroundColor: "#f5f5f5", // Color de fondo del encabezado
+                    backgroundColor: "#d3d3d3", // Color de fondo del encabezado
                     borderBottom: "2px solid #e0e0e0", // Línea en la parte inferior del encabezado
                     textAlign: "left", // Alinea el texto a la izquierda
                   },
@@ -304,7 +340,9 @@ const PendientesPage = () => {
                 },
                 pagination: {
                   style: {
-                    borderTop: "1px solid #e0e0e0", // Línea en la parte superior de la paginación
+                    backgroundColor: "#e8e8e8", // Color gris para la paginación
+                    fontSize: "15px", // Tamaño de la fuente de la paginación (puedes ajustar esto)
+                    height: "5px",
                   },
                 },
                 // Elimina el triángulo de ordenamiento
@@ -317,51 +355,72 @@ const PendientesPage = () => {
             />
           </Box>
         </Box>
+        <Button
+          variant="contained"
+          //color="secondary"
+          onClick={handleReportePendientes} // Función que manejará el evento al hacer clic en el botón
+          sx={{
+            marginTop: 8,
+            fontSize: "12px", 
+            padding: "6px 12px",
+            backgroundColor: "#171F4D",
+            "&:hover": {
+              backgroundColor: "#0f1436", // Color para el hover, un poco más oscuro
+            },
+          }}
+        >
+          Generar reporte
+        </Button>
       </Container>
 
       <Dialog
-          open={openVisualizar}
-          onClose={handleCloseVisualizar}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>
-            Expediente: {selectedFolder?.Nombre_expediente}
-          </DialogTitle>
-          <DialogContent>
-            {selectedFiles.length > 0 ? (
-              <TableContainer component={Paper}>
-                <Table>
-                  <TableBody>
-                    {selectedFiles.map((file, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{decodeURIComponent(escape(file))}</TableCell>
-                        <TableCell>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => handleOpenFile(file)}
-                          >
-                            Abrir
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            ) : (
-              <Typography variant="h6" align="center" gutterBottom>
-                No hay archivos en este expediente.
-              </Typography>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseVisualizar}  color="primary">Cerrar</Button>
-          </DialogActions>
-        </Dialog>
+        open={openVisualizar}
+        onClose={handleCloseVisualizar}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Expediente: {selectedFolder?.Nombre_expediente}
+        </DialogTitle>
+        <DialogContent>
+          {selectedFiles.length > 0 ? (
+            <TableContainer component={Paper}>
+              <Table>
+                <TableBody>
+                  {selectedFiles.map((file, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{decodeURIComponent(escape(file))}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => handleOpenFile(file)}
+                        >
+                          Abrir
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ) : (
+            <Typography variant="h6" align="center" gutterBottom>
+              No hay archivos en este expediente.
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseVisualizar} color="primary">
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-      <Dialog open={openCambiarEstado} onClose={() => setOpenCambiarEstado(false)}>
+      <Dialog
+        open={openCambiarEstado}
+        onClose={() => setOpenCambiarEstado(false)}
+      >
         <DialogTitle>Cambiar Estado del Expediente</DialogTitle>
         <DialogContent>
           <Select
@@ -372,8 +431,8 @@ const PendientesPage = () => {
             displayEmpty
           >
             <MenuItem value="" disabled>
-                <em>Elija el estado</em>
-              </MenuItem>
+              <em>Elija el estado</em>
+            </MenuItem>
             <MenuItem value="Activos">Activos</MenuItem>
             <MenuItem value="Finalizados">Finalizados</MenuItem>
           </Select>
@@ -382,8 +441,7 @@ const PendientesPage = () => {
           <Button onClick={() => setOpenCambiarEstado(false)}>Cancelar</Button>
           <Button onClick={handleCambiarEstado} color="primary">
             Cambiar Estado
-            
-            </Button>
+          </Button>
         </DialogActions>
       </Dialog>
     </div>

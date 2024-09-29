@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
@@ -110,7 +110,6 @@ const RegisterPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-
   const handleRegister = async (e) => {
     e.preventDefault();
     // setMyClass("");
@@ -166,12 +165,22 @@ const RegisterPage = () => {
             overflowY: "auto",
           }}
         >
-          <Typography component="h1" variant="h5" sx={{ mb: 2 }}>
-            Registro
+          <Typography
+            component="h1"
+            variant="h5"
+            sx={{ mb: 2, fontWeight: "bold" }}
+          >
+            REGISTRO
           </Typography>
           <Box
             component="form"
-            sx={{ width: "100%", mt: 1 }}
+            sx={{
+              width: "100%",
+              mt: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
             onSubmit={handleRegister}
           >
             <TextField
@@ -363,14 +372,21 @@ const RegisterPage = () => {
               }}
               error={!!errors.confirmarContrasena}
               helperText={errors.confirmarContrasena}
-              // className={myClass}
             />
             <Button
               type="submit"
-              fullWidth
               variant="contained"
-              color="primary"
-              sx={{ mt: 2, mb: 1 }}
+              sx={{
+                mt: 3,
+                mb: 2,
+                backgroundColor: "#171F4D",
+                width: "150px",
+                fontWeight: "bold",
+                alignSelf: "center",
+                "&:hover": {
+                  backgroundColor: "#0f1436",
+                },
+              }}
             >
               Registrarse
             </Button>
