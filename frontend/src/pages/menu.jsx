@@ -34,10 +34,10 @@ const MenuPage = () => {
               margin: 4,
               backgroundColor: "#ff0000",
               fontWeight: "bold",
-              fontSize: "12px", 
+              fontSize: "12px",
               padding: "6px 12px",
               "&:hover": {
-                backgroundColor: "#cc0000", // Color para el hover, un poco más oscuro
+                backgroundColor: "#cc0000",
               },
             }}
           >

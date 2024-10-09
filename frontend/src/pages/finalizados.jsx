@@ -165,14 +165,15 @@ const FinalizadosPage = () => {
   };
 
   const handleReporteFinalizados = () => {
-
     const nombreUsuario = localStorage.getItem("nombreUsuario");
 
     const newTab = window.open(
-      `http://localhost:3000/reporte-estados/Finalizados?usuario=${encodeURIComponent(nombreUsuario)}`,
-    "_blank"
+      `http://localhost:3000/reporte-estados/Finalizados?usuario=${encodeURIComponent(
+        nombreUsuario
+      )}`,
+      "_blank"
     );
-    
+
     if (newTab) {
       newTab.document.title = "Reporte Expedientes Finalizados";
     }
@@ -210,13 +211,15 @@ const FinalizadosPage = () => {
       name: "Acciones",
       cell: (row) => (
         <ButtonGroup variant="contained">
-          <IconButton onClick={() => handleVisualizar(row)} 
-          sx={{ color: "#171F4D" }}
+          <IconButton
+            onClick={() => handleVisualizar(row)}
+            sx={{ color: "#171F4D" }}
           >
             <Visibility />
           </IconButton>
-          <IconButton onClick={() => handleOpenEliminar(row)} 
-          sx={{ color: "#171F4D" }}
+          <IconButton
+            onClick={() => handleOpenEliminar(row)}
+            sx={{ color: "#171F4D" }}
           >
             <Delete />
           </IconButton>
@@ -241,15 +244,19 @@ const FinalizadosPage = () => {
             variant="contained"
             //color="secondary"
             onClick={handleLogout}
-            sx={{ position: "absolute", top: 0, left: 45, margin: 4,
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 45,
+              margin: 4,
               backgroundColor: "#ff0000",
               fontWeight: "bold",
-              fontSize: "12px", 
+              fontSize: "12px",
               padding: "6px 12px",
               "&:hover": {
-                backgroundColor: "#cc0000", 
+                backgroundColor: "#cc0000",
               },
-             }}
+            }}
           >
             Cerrar Sesión
           </Button>
@@ -354,15 +361,15 @@ const FinalizadosPage = () => {
           variant="contained"
           color="secondary"
           onClick={handleReporteFinalizados} // Función que manejará el evento al hacer clic en el botón
-          sx={{ 
+          sx={{
             marginTop: 8,
-            fontSize: "12px", 
+            fontSize: "12px",
             padding: "6px 12px",
             backgroundColor: "#171F4D",
-              "&:hover": {
-                backgroundColor: "#0f1436", // Color para el hover, un poco más oscuro
-              },
-           }}
+            "&:hover": {
+              backgroundColor: "#0f1436", // Color para el hover, un poco más oscuro
+            },
+          }}
         >
           Generar reporte
         </Button>

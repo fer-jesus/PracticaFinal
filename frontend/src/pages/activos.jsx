@@ -32,7 +32,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import axios from "axios";
-//import { saveAs } from "file-saver"; desinstarlar file-saver
 import StateButtons from "../components/StateButtons";
 import "../styles/estados.css";
 
@@ -49,25 +48,8 @@ const ActivosPage = () => {
   const [openCambiarEstado, setOpenCambiarEstado] = useState(false);
   const [nuevoEstado, setNuevoEstado] = useState("");
   const [folderToChange, setFolderToChange] = useState(null);
-  // const [destinationPath, setDestinationPath] = useState("");
-  // const [openEscanear, setOpenEscanear] = useState(false);
-  
 
-
-  // useEffect(() => {
-  //   const fetchFolders = async () => {
-  //     try {
-  //       const response = await axios.get("http://localhost:3000/get-folders");
-  //       setFolders(response.data);
-  //     } catch (error) {
-  //       console.error("Error al obtener las carpetas:", error);
-  //       alert("Error al obtener las carpetas.");
-  //     }
-  //   };
-
-  //   fetchFolders();
-  // }, []);
-
+  // Función para obtener las carpetas de la base de datos
   const fetchFolders = async () => {
     try {
       const response = await axios.get(
@@ -270,50 +252,21 @@ const ActivosPage = () => {
     setOpenCambiarEstado(true);
   };
 
-  const handleOpenEscanear = (expediente) => {
-    setSelectedFolder(expediente);
-    //setOpenEscanear(true);
-    // Abre la página de escaneo en una nueva pestaña
-    window.open("https://demo.dynamsoft.com/web-twain/", "_blank");
+  // Función para escanear archivos
+  const handleScan = async () => {
+    try {
+      // Hacer una solicitud GET a la API para abrir NAPS2
+      await axios.get("http://localhost:3000/abrir-naps2");
+      //alert(response.data.message);  // Mostrar un mensaje cuando NAPS2 se abra
+    } catch (error) {
+      alert("Hubo un error al intentar abrir NAPS2.");
+      console.error(error);
+    }
   };
 
-  // const handleCloseEscanear = () => {
-  //   setOpenEscanear(false);
-  // };
-
-  // const handleDestinationChange = (e) => {
-  //   setDestinationPath(e.target.value);
-  // };
-
-  // const handleFileChange = (e) => {
-  //   setSelectedFiles(e.target.files[0]); // Guardamos el primer archivo seleccionado
-  // };
-
-  // const handleScanner = (rutaArchivo) => {
-  //   if (!rutaArchivo || !selectedFolder) {
-  //     alert('Por favor, selecciona una ruta de archivo válida.');
-  //     return;
-  //   }
-
-  //   // Aquí enviamos la ruta del archivo escaneado y el expediente seleccionado al backend para guardarlo
-  //   fetch('http://localhost:3000/escanear', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify({
-  //       expedienteId: selectedFolder.id,
-  //       filePath: rutaArchivo, // Esta ruta la obtendrás de la herramienta de escaneo
-  //     }),
-  //   })
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       console.log("Datos recibidos del servidor:", data);
-  //     })
-  //     .catch((error) => {
-  //       console.error('Error al guardar el escaneo:', error);
-  //     });
-  // };
+  const Escanear = () => {
+    handleScan(); // Llama a la función handleScan cuando sea necesario
+  };
 
   const handleImportarArchivos = async (folder) => {
     try {
@@ -361,12 +314,13 @@ const ActivosPage = () => {
   };
 
   const handleReporteActivos = () => {
-
     const nombreUsuario = localStorage.getItem("nombreUsuario");
 
     const newTab = window.open(
-      `http://localhost:3000/reporte-estados/Activos?usuario=${encodeURIComponent(nombreUsuario)}`,
-    "_blank"
+      `http://localhost:3000/reporte-estados/Activos?usuario=${encodeURIComponent(
+        nombreUsuario
+      )}`,
+      "_blank"
     );
 
     if (newTab) {
@@ -424,10 +378,7 @@ const ActivosPage = () => {
             <CompareArrows />
           </IconButton>
 
-          <IconButton
-            onClick={() => handleOpenEscanear(row)}
-            sx={{ color: "#171F4D" }}
-          >
+          <IconButton onClick={Escanear} sx={{ color: "#171F4D" }}>
             <Scanner />
           </IconButton>
           <IconButton
@@ -464,10 +415,10 @@ const ActivosPage = () => {
               margin: 4,
               backgroundColor: "#ff0000",
               fontWeight: "bold",
-              fontSize: "12px", 
+              fontSize: "12px",
               padding: "6px 12px",
               "&:hover": {
-                backgroundColor: "#cc0000", // Color para el hover, un poco más oscuro
+                backgroundColor: "#cc0000",
               },
             }}
           >
@@ -526,10 +477,10 @@ const ActivosPage = () => {
               marginBottom: 2,
               backgroundColor: "#171F4D",
               fontWeight: "bold",
-              fontSize: "12px", 
+              fontSize: "12px",
               padding: "6px 12px",
               "&:hover": {
-                backgroundColor: "#0f1436", // Color para el hover, un poco más oscuro
+                backgroundColor: "#0f1436",
               },
             }}
           >
@@ -595,7 +546,7 @@ const ActivosPage = () => {
           onClick={handleReporteActivos} // Función que manejará el evento al hacer clic en el botón
           sx={{
             marginTop: 8,
-            fontSize: "12px", 
+            fontSize: "12px",
             padding: "6px 12px",
             backgroundColor: "#171F4D",
             "&:hover": {
@@ -716,35 +667,6 @@ const ActivosPage = () => {
             </Button>
           </DialogActions>
         </Dialog>
-
-        {/* <Dialog open={openEscanear} onClose={handleCloseEscanear}>
-  <DialogTitle>Escanear Expediente</DialogTitle>
-  <DialogContent>
-    <DialogContentText>
-      Selecciona el archivo escaneado y especifica la ubicación donde deseas guardarlo.
-    </DialogContentText>
-    <TextField
-      margin="dense"
-      label="Ruta de destino"
-      fullWidth
-      variant="outlined"
-      value={destinationPath}
-      onChange={handleDestinationChange}
-      sx={{ marginTop: 2 }}
-    />
-    <input
-      type="file"
-      onChange={handleFileChange}
-      style={{ marginTop: 16, width: '100%' }}
-    />
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={handleCloseEscanear}>Cancelar</Button>
-    <Button onClick={handleEscanear} color="primary">
-      Guardar Escaneo
-    </Button>
-  </DialogActions>
-</Dialog> */}
       </Container>
     </div>
   );

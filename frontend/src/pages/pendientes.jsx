@@ -163,12 +163,13 @@ const PendientesPage = () => {
   };
 
   const handleReportePendientes = () => {
-
     const nombreUsuario = localStorage.getItem("nombreUsuario");
 
     const newTab = window.open(
-      `http://localhost:3000/reporte-estados/Pendientes?usuario=${encodeURIComponent(nombreUsuario)}`,
-    "_blank"
+      `http://localhost:3000/reporte-estados/Pendientes?usuario=${encodeURIComponent(
+        nombreUsuario
+      )}`,
+      "_blank"
     );
 
     if (newTab) {
@@ -248,10 +249,10 @@ const PendientesPage = () => {
               margin: 4,
               backgroundColor: "#ff0000",
               fontWeight: "bold",
-              fontSize: "12px", 
+              fontSize: "12px",
               padding: "6px 12px",
               "&:hover": {
-                backgroundColor: "#cc0000", 
+                backgroundColor: "#cc0000",
               },
             }}
           >
@@ -361,7 +362,7 @@ const PendientesPage = () => {
           onClick={handleReportePendientes} // Función que manejará el evento al hacer clic en el botón
           sx={{
             marginTop: 8,
-            fontSize: "12px", 
+            fontSize: "12px",
             padding: "6px 12px",
             backgroundColor: "#171F4D",
             "&:hover": {
