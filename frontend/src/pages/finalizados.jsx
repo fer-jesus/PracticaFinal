@@ -23,6 +23,7 @@ import {
 import { Visibility, Delete, Search } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
+import Swal from "sweetalert2";
 import StateButtons from "../components/StateButtons";
 import axios from "axios";
 import "../styles/estados.css";
@@ -156,11 +157,23 @@ const FinalizadosPage = () => {
           (folder) => folder.Id_carpeta !== folderToDelete.Id_carpeta
         )
       );
+
       handleCloseEliminar();
-      alert("Carpeta eliminada exitosamente.");
+      //alert("Carpeta eliminada exitosamente.");
+      // Mostrar confirmación
+      await Swal.fire({
+        icon: "success",
+        title: "¡Eliminado!",
+        text: "El expediente ha sido eliminado exitosamente.",
+      });
     } catch (error) {
       console.error("Error al eliminar la carpeta:", error);
-      alert("Error al eliminar la carpeta.");
+      //alert("Error al eliminar la carpeta.");
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Hubo un error al eliminar la carpeta.",
+      });
     }
   };
 

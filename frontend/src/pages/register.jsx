@@ -14,6 +14,7 @@ import {
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import "../styles/register.css";
+import Swal from "sweetalert2";
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -134,6 +135,11 @@ const RegisterPage = () => {
 
       if (response.status === 200) {
         console.log("Usuario registrado exitosamente");
+        Swal.fire({
+          icon: "success",
+          title: "Registro exitoso",
+          text: "Usuario registrado exitosamente.",
+        });
         navigate("/login");
       }
     } catch (error) {

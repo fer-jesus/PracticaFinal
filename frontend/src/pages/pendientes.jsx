@@ -24,6 +24,7 @@ import {
 import { Visibility, CompareArrows, Search } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
+import Swal from "sweetalert2";
 import StateButtons from "../components/StateButtons";
 import axios from "axios";
 import "../styles/estados.css";
@@ -39,22 +40,24 @@ const PendientesPage = () => {
   const [nuevoEstado, setNuevoEstado] = useState("");
   const [folderToChange, setFolderToChange] = useState(null);
 
-  useEffect(() => {
-    const fetchFolders = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:3000/get-folders/Pendientes"
-        );
-        //console.log(response.data);
-        setFolders(response.data);
-      } catch (error) {
-        if (error.response && error.response.status === 404) {
-          setFolders([]); // Si no hay carpetas, se establece una lista vacía
-        } else {
-          console.error("Error al obtener las carpetas:", error);
-        }
+  // Función para obtener las carpetas de la base de datos
+  const fetchFolders = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:3000/get-folders/Pendientes"
+      );
+      //console.log(response.data);
+      setFolders(response.data);
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        setFolders([]); // Si no hay carpetas, se establece una lista vacía
+      } else {
+        console.error("Error al obtener las carpetas:", error);
       }
-    };
+    }
+  };
+  // Llama a fetchFolders cuando el componente se monte
+  useEffect(() => {
     fetchFolders();
   }, []);
 
@@ -133,7 +136,13 @@ const PendientesPage = () => {
 
   const handleCambiarEstado = async () => {
     if (!folderToChange || !nuevoEstado) {
-      alert("Seleccione una carpeta y un estado válido.");
+      //alert("Seleccione una carpeta y un estado válido.");
+      Swal.fire({
+        icon: "warning",
+        title: "Advertencia",
+        text: "Seleccione una carpeta y un estado válido.",
+        confirmButtonText: "OK",
+      });
       return;
     }
 
@@ -144,16 +153,30 @@ const PendientesPage = () => {
         //fechaCambioEstado: new Date().toISOString().split("T")[0],
       });
 
-      alert("El estado ha sido cambiado exitosamente y la carpeta fue movida.");
+      //alert("El estado ha sido cambiado exitosamente y la carpeta fue movida.");
+
+      Swal.fire({
+        icon: "success",
+        title: "Éxito",
+        text: "El expediente ha sido actualizado.",
+        confirmButtonText: "OK",
+      });
+
       setOpenCambiarEstado(false);
       setFolderToChange(null);
       setNuevoEstado("");
 
-      //fetchFolders();//// Vuelve a cargar las carpetas de activos actualizadas
-      window.location.reload();
+      fetchFolders(); //// Vuelve a cargar las carpetas de activos actualizadas
+      //window.location.reload();
     } catch (error) {
       console.error("Error al cambiar el estado:", error);
-      alert("Error al cambiar el estado del expediente.");
+      //alert("Error al cambiar el estado del expediente.");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Error al cambiar el estado del expediente.",
+        confirmButtonText: "OK",
+      });
     }
   };
 

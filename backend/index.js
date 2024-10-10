@@ -423,7 +423,7 @@ app.post("/upload-file", (req, res) => {
 
       res
         .status(200)
-        .json({ message: "Archivos subidos exitosamente al expediente." });
+        .json({ message: "Archivos importados exitosamente al expediente." });
     });
   } catch (error) {
     console.error("Error al subir archivos:", error);

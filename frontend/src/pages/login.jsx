@@ -18,6 +18,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import logoBufete from "../assets/Bufete-popular.png";
+import Swal from "sweetalert2";
 //import logoUSAC from "../assets/Usac_logo.png";
 
 const LoginPage = () => {
@@ -53,7 +54,12 @@ const LoginPage = () => {
       }
     } catch (error) {
       if (error.response && error.response.status === 400) {
-        alert("Usuario o contraseña incorrectos");
+        //alert("Usuario o contraseña incorrectos");
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Usuario o contraseña incorrectos.",
+        });
         setUser("");
         setPassword("");
       } else {

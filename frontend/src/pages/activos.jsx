@@ -31,6 +31,7 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
+import Swal from "sweetalert2";
 import axios from "axios";
 import StateButtons from "../components/StateButtons";
 import "../styles/estados.css";
@@ -84,12 +85,22 @@ const ActivosPage = () => {
 
   const handleCreateFolder = async () => {
     if (!newFolderName.trim()) {
-      alert("El nombre de la carpeta no puede estar vacío.");
+      //alert("El nombre de la carpeta no puede estar vacío.");
+      await Swal.fire({
+        icon: 'warning',
+        title: 'Nombre vacío',
+        text: 'El nombre de la carpeta no puede estar vacío.',
+      });
       return;
     }
 
     if (!newFolderDescription.trim()) {
-      alert("La descripción de la carpeta no puede estar vacía.");
+      //alert("La descripción de la carpeta no puede estar vacía.");
+      await Swal.fire({
+        icon: 'warning',
+        title: 'Descripción vacía',
+        text: 'La descripción de la carpeta no puede estar vacía.',
+      });
       return;
     }
 
@@ -104,7 +115,12 @@ const ActivosPage = () => {
       // Verificar si la carpeta ya existe en el sistema de archivos
       try {
         await directoryHandle.getDirectoryHandle(newFolderName);
-        alert("Ya existe una carpeta con este nombre.");
+        //alert("Ya existe una carpeta con este nombre.");
+        await Swal.fire({
+          icon: 'error',
+          title: 'Carpeta existente',
+          text: 'Ya existe una carpeta con este nombre.',
+        });
         return;
       } catch (error) {
         // Si la carpeta no existe, continua con la creación
@@ -145,12 +161,28 @@ const ActivosPage = () => {
 
         fetchFolders(); //actualiza la lista de carpetas
         handleClose();
+        //alert("Carpeta registrada exitosamente.");
+        await Swal.fire({
+          icon: 'success',
+          title: '¡Carpeta creada!',
+          text: 'La carpeta ha sido creada y registrada exitosamente.',
+        });
       } else {
-        alert("Error al registrar la carpeta.");
+        //alert("Error al registrar la carpeta.");
+        await Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al registrar la carpeta.',
+        });
       }
     } catch (error) {
       console.error("Error al crear la carpeta:", error);
-      alert("Error al crear la carpeta");
+      //alert("Error al crear la carpeta");
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error al crear la carpeta.',
+      });
     }
   };
 
@@ -224,7 +256,13 @@ const ActivosPage = () => {
 
   const handleCambiarEstado = async () => {
     if (!folderToChange || !nuevoEstado) {
-      alert("Seleccione una carpeta y un estado válido.");
+      //alert("Seleccione una carpeta y un estado válido.");
+      Swal.fire({
+        icon: "warning",
+        title: "Advertencia",
+        text: "Seleccione una carpeta y un estado válido.",
+        confirmButtonText: "OK",
+      });
       return;
     }
 
@@ -236,14 +274,27 @@ const ActivosPage = () => {
         //fechaCambioEstado: new Date().toISOString().split("T")[0],
       });
 
-      alert("El estado ha sido cambiado exitosamente y la carpeta fue movida.");
+      //alert("El estado ha sido cambiado exitosamente y la carpeta fue movida.");
+      Swal.fire({
+        icon: "success",
+        title: "Éxito",
+        text: "El expediente ha sido actualizado.",
+        confirmButtonText: "OK",
+      });
+
       fetchFolders(); //// Vuelve a cargar las carpetas de activos actualizadas
       setOpenCambiarEstado(false);
       setFolderToChange(null);
       setNuevoEstado("");
     } catch (error) {
       console.error("Error al cambiar el estado:", error);
-      alert("Error al cambiar el estado del expediente.");
+      //alert("Error al cambiar el estado del expediente.");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Error al cambiar el estado del expediente.",
+        confirmButtonText: "OK",
+      });
     }
   };
 
@@ -278,7 +329,12 @@ const ActivosPage = () => {
       fileInput.onchange = async (event) => {
         const files = event.target.files;
         if (!files.length) {
-          alert("No se seleccionaron archivos.");
+          //alert("No se seleccionaron archivos.");
+          await Swal.fire({
+            icon: 'warning',
+            title: 'No se seleccionaron archivos',
+            text: 'Por favor selecciona al menos un archivo para importar.',
+          });
           return;
         }
 
@@ -297,11 +353,22 @@ const ActivosPage = () => {
             }
           );
 
-          alert(response.data.message);
+          await Swal.fire({
+            icon: 'success',
+            title: 'Archivos importados',
+            text: response.data.message,
+          });
+
+          //alert(response.data.message);
           fetchFolders(); //actualiza la lista de carpetas
         } catch (error) {
           console.error("Error al subir archivos:", error);
-          alert("Error al subir archivos.");
+          //alert("Error al subir archivos.");
+          await Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error al subir archivos.',
+          });
         }
       };
 
@@ -309,7 +376,12 @@ const ActivosPage = () => {
       fileInput.click();
     } catch (error) {
       console.error("Error al subir archivos:", error);
-      alert("Error al subir archivos.");
+      //alert("Error al subir archivos.");
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error al subir archivos.',
+      });
     }
   };
 
