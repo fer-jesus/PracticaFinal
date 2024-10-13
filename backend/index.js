@@ -1,16 +1,15 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const bcrypt = require("bcrypt"); // Importa bcrypt para el hash de contraseñas
-const db = require("./database"); // Importa la configuración de la base de datos
-const fs = require("fs"); // Importa el módulo fs para el manejo del sistema de archivos
-const path = require("path"); // Importa el módulo path para manejar rutas de archivos
+const bcrypt = require("bcrypt"); // bcrypt para el hash de contraseñas
+const db = require("./database"); // configuración de la base de datos
+const fs = require("fs"); // módulo fs para el manejo del sistema de archivos
+const path = require("path"); // módulo path para manejar rutas de archivos
 const fileUpload = require("express-fileupload");
+const iconv = require('iconv-lite');// iconv-lite para convertir la codificación de caracteres
 const { jsPDF } = require("jspdf");
 require("jspdf-autotable");
-const { execFile } = require("child_process"); // Importa el módulo child_process para ejecutar comandos del sistema operativo en Node.js se usa para abrir NAPS2
-const nodemailer = require('nodemailer');
-require('dotenv').config();
+const { execFile } = require("child_process"); // child_process para ejecutar comandos del sistema operativo en Node.js se usa para abrir NAPS2
 
 const app = express();
 const PORT = 3000;
