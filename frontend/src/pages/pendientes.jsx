@@ -385,7 +385,6 @@ const PendientesPage = () => {
         </Box>
         <Button
           variant="contained"
-          //color="secondary"
           onClick={handleReportePendientes} // Función que manejará el evento al hacer clic en el botón
           sx={{
             marginTop: 8,
@@ -393,7 +392,7 @@ const PendientesPage = () => {
             padding: "6px 12px",
             backgroundColor: "#171F4D",
             "&:hover": {
-              backgroundColor: "#0f1436", // Color para el hover, un poco más oscuro
+              backgroundColor: "#0f1436", 
             },
           }}
         >

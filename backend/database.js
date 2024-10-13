@@ -5,7 +5,7 @@ const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
   password: '1234',
-  database: 'practica_final',  // Asegúrate de que esta sea la base de datos correcta
+  database: 'practica_final',  
   charset: 'utf8mb4'
 });
 

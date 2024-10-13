@@ -622,7 +622,7 @@ app.get("/reporte-estados/:estado", (req, res) => {
       head: [tableColumn],
       body: tableRows,
       startY: 38, // Posición inicial de la tabla
-      theme: "grid", // Puedes cambiar el tema a 'grid', 'striped', o 'plain'
+      theme: "grid", 
       headStyles: { fillColor: [23, 31, 77], halign: "center" }, // Color del encabezado
       margin: { top: 10 },
     });

@@ -149,8 +149,7 @@ const FinalizadosPage = () => {
     try {
       // Eliminar la carpeta utilizando el ID
       await axios.delete("http://localhost:3000/delete-folder", {
-        // headers: { 'Content-Type': 'application/json' },
-        data: { Id_carpeta: folderToDelete.Id_carpeta }, // Enviamos el ID aquí
+        data: { Id_carpeta: folderToDelete.Id_carpeta }, 
       });
 
       // Actualiza la lista de carpetas eliminando la que fue borrada
@@ -257,7 +256,6 @@ const FinalizadosPage = () => {
         >
           <Button
             variant="contained"
-            //color="secondary"
             onClick={handleLogout}
             sx={{
               position: "absolute",
@@ -382,7 +380,7 @@ const FinalizadosPage = () => {
             padding: "6px 12px",
             backgroundColor: "#171F4D",
             "&:hover": {
-              backgroundColor: "#0f1436", // Color para el hover, un poco más oscuro
+              backgroundColor: "#0f1436", 
             },
           }}
         >

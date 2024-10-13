@@ -143,7 +143,6 @@ const RegisterPage = () => {
       }
     } catch (error) {
       console.error("Error al registrar usuario:", error);
-      // Muestra un Swal con el mensaje de error específico del backend
       if (error.response && error.response.data.error) {
         Swal.fire({
           icon: "error",

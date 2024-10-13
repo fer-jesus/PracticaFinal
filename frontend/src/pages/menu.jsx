@@ -1,4 +1,3 @@
-//import React from 'react';
 import { Container, Box, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import StateButtons from "../components/StateButtons";

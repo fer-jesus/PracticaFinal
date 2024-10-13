@@ -626,7 +626,7 @@ const ActivosPage = () => {
             padding: "6px 12px",
             backgroundColor: "#171F4D",
             "&:hover": {
-              backgroundColor: "#0f1436", // Color para el hover, un poco más oscuro
+              backgroundColor: "#0f1436", 
             },
           }}
         >
