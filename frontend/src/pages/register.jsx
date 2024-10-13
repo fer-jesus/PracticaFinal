@@ -113,9 +113,7 @@ const RegisterPage = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    // setMyClass("");
     if (!validateForm()) {
-      // setMyClass("is-invalid");
       return;
     }
 
@@ -139,11 +137,26 @@ const RegisterPage = () => {
           icon: "success",
           title: "Registro exitoso",
           text: "Usuario registrado exitosamente.",
+        }).then(() => {
+          navigate("/login");
         });
-        navigate("/login");
       }
     } catch (error) {
       console.error("Error al registrar usuario:", error);
+      // Muestra un Swal con el mensaje de error específico del backend
+      if (error.response && error.response.data.error) {
+        Swal.fire({
+          icon: "error",
+          title: "Error de registro",
+          text: error.response.data.error,
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Error al registrar usuario. Inténtalo de nuevo más tarde.",
+        });
+      }
     }
   };
 

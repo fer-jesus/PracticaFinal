@@ -89,7 +89,7 @@ const LoginPage = () => {
       <img src={logoBufete} alt="Logo Bufete" className="logo-bufete" />
 
       <Container component="main" maxWidth="xs">
-        <Paper elevation={3} sx={{ padding: 4 }}>
+        <Paper elevation={3} sx={{ padding: 1, minHeight: "200px" }}>
           <Box
             sx={{
               display: "flex",
@@ -128,7 +128,10 @@ const LoginPage = () => {
                   setErrorUser(false);
                 }}
                 error={errorUser}
-                helperText={errorUser ? "Este campo no puede estar vacío" : ""}
+                helperText={errorUser ? "Este campo no puede estar vacío" : " "}
+                sx={{
+                  marginBottom: "1px",
+                }}
               />
               <TextField
                 variant="outlined"
@@ -148,7 +151,7 @@ const LoginPage = () => {
                 inputRef={passwordRef}
                 error={errorPassword}
                 helperText={
-                  errorPassword ? "Este campo no puede estar vacío" : ""
+                  errorPassword ? "Este campo no puede estar vacío" : " "
                 }
                 InputProps={{
                   endAdornment: (
@@ -163,7 +166,11 @@ const LoginPage = () => {
                     </InputAdornment>
                   ),
                 }}
+                sx={{
+                  marginBottom: "1px",
+                }}
               />
+
               <Button
                 type="button"
                 variant="contained"

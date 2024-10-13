@@ -8,7 +8,9 @@ const path = require("path"); // Importa el módulo path para manejar rutas de a
 const fileUpload = require("express-fileupload");
 const { jsPDF } = require("jspdf");
 require("jspdf-autotable");
-const { execFile } = require("child_process"); // Importa el módulo child_process para ejecutar comandos del sistema operativo en Node.js
+const { execFile } = require("child_process"); // Importa el módulo child_process para ejecutar comandos del sistema operativo en Node.js se usa para abrir NAPS2
+const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 const app = express();
 const PORT = 3000;
@@ -41,36 +43,59 @@ app.post("/register", async (req, res) => {
   } = req.body;
 
   try {
-    // Hash de la contraseña antes de guardarla en la base de datos
-    const hashedPassword = await bcrypt.hash(contrasena, 10);
+    // Verificar si el nombre de usuario ya existe o correo ya existe
+    const checkQuery = `
+      SELECT * FROM USUARIO WHERE NombreUsuario = ? OR Email = ?
+    `;
+    db.query(checkQuery, [nombreUsuario, email], async (err, results) => {
+      if (err) {
+        console.error("Error al verificar usuario:", err);
+        return res.status(500).json({ error: "Error al verificar usuario" });
+      }
 
-    const query = `
+      if (results.length > 0) {
+        // Si el nombre de usuario o el correo ya existen
+        return res.status(400).json({
+          error:
+            results[0].NombreUsuario === nombreUsuario
+              ? "El nombre de usuario ya está en uso."
+              : "El correo ya está en uso.",
+        });
+      }
+       // Si el usuario no existe, procede a insertar el nuevo usuario
+      // Hash de la contraseña antes de guardarla en la base de datos
+      const hashedPassword = await bcrypt.hash(contrasena, 10);
+
+      const query = `
       INSERT INTO USUARIO (Nombres, Apellidos, Telefono, Email, Fecha_Nacimiento, Edad, Direccion, Rol, NombreUsuario, Contraseña)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    db.query(
-      query,
-      [
-        nombres,
-        apellidos,
-        telefono,
-        email,
-        fechaNacimiento,
-        edad,
-        direccion,
-        rol,
-        nombreUsuario,
-        hashedPassword,
-      ],
-      (err, results) => {
-        if (err) {
-          console.error("Error al registrar usuario:", err);
-          return res.status(500).json({ error: "Error al registrar usuario" });
+      db.query(
+        query,
+        [
+          nombres,
+          apellidos,
+          telefono,
+          email,
+          fechaNacimiento,
+          edad,
+          direccion,
+          rol,
+          nombreUsuario,
+          hashedPassword,
+        ],
+        (err, results) => {
+          if (err) {
+            console.error("Error al registrar usuario:", err);
+            return res
+              .status(500)
+              .json({ error: "Error al registrar usuario" });
+          }
+          res.status(200).json({ message: "Usuario registrado exitosamente" });
         }
-        res.status(200).json({ message: "Usuario registrado exitosamente" });
-      }
-    );
+      );
+    });
   } catch (err) {
     console.error("Error al registrar usuario:", err);
     res.status(500).json({ error: "Error al registrar usuario" });
@@ -105,6 +130,7 @@ app.post("/login", (req, res) => {
     res.status(200).json({ message: "Inicio de sesión exitoso" });
   });
 });
+
 
 // Ruta para registrar una nueva carpeta en la base de datos
 app.post("/register-folder", (req, res) => {
@@ -238,7 +264,9 @@ app.post("/filesPath", (req, res) => {
 // Ruta para abrir archivos basados en el path relativo
 app.get("/filesOpen/:fileName", (req, res) => {
   // Obtiene el nombre del archivo de los parámetros
-  const fileName = req.params.fileName;
+  const fileName =  decodeURIComponent(req.params.fileName);
+  console.log("fileName:", fileName);
+
 
   // Verifica que pathFrontend esté configurado
   if (!pathFrontend) {
@@ -417,7 +445,8 @@ app.post("/upload-file", (req, res) => {
         : [req.files.files];
 
       files.forEach((file) => {
-        const destino = path.join(carpetaRuta, file.name);
+        const nombreArchivoUtf8 = iconv.decode(Buffer.from(file.name, 'latin1'), 'utf8');
+        const destino = path.join(carpetaRuta, nombreArchivoUtf8);
         fs.writeFileSync(destino, file.data); // Guardar el archivo en la carpeta
       });
 

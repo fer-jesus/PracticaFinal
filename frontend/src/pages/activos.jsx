@@ -87,9 +87,9 @@ const ActivosPage = () => {
     if (!newFolderName.trim()) {
       //alert("El nombre de la carpeta no puede estar vacío.");
       await Swal.fire({
-        icon: 'warning',
-        title: 'Nombre vacío',
-        text: 'El nombre de la carpeta no puede estar vacío.',
+        icon: "warning",
+        title: "Nombre vacío",
+        text: "El nombre de la carpeta no puede estar vacío.",
       });
       return;
     }
@@ -97,9 +97,9 @@ const ActivosPage = () => {
     if (!newFolderDescription.trim()) {
       //alert("La descripción de la carpeta no puede estar vacía.");
       await Swal.fire({
-        icon: 'warning',
-        title: 'Descripción vacía',
-        text: 'La descripción de la carpeta no puede estar vacía.',
+        icon: "warning",
+        title: "Descripción vacía",
+        text: "La descripción de la carpeta no puede estar vacía.",
       });
       return;
     }
@@ -117,9 +117,9 @@ const ActivosPage = () => {
         await directoryHandle.getDirectoryHandle(newFolderName);
         //alert("Ya existe una carpeta con este nombre.");
         await Swal.fire({
-          icon: 'error',
-          title: 'Carpeta existente',
-          text: 'Ya existe una carpeta con este nombre.',
+          icon: "error",
+          title: "Carpeta existente",
+          text: "Ya existe una carpeta con este nombre.",
         });
         return;
       } catch (error) {
@@ -163,25 +163,25 @@ const ActivosPage = () => {
         handleClose();
         //alert("Carpeta registrada exitosamente.");
         await Swal.fire({
-          icon: 'success',
-          title: '¡Carpeta creada!',
-          text: 'La carpeta ha sido creada y registrada exitosamente.',
+          icon: "success",
+          title: "¡Carpeta creada!",
+          text: "La carpeta ha sido creada y registrada exitosamente.",
         });
       } else {
         //alert("Error al registrar la carpeta.");
         await Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Error al registrar la carpeta.',
+          icon: "error",
+          title: "Error",
+          text: "Error al registrar la carpeta.",
         });
       }
     } catch (error) {
       console.error("Error al crear la carpeta:", error);
       //alert("Error al crear la carpeta");
       await Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Error al crear la carpeta.',
+        icon: "error",
+        title: "Error",
+        text: "Error al crear la carpeta.",
       });
     }
   };
@@ -232,13 +232,15 @@ const ActivosPage = () => {
 
       const pathSimple = localStorage.getItem("pathAbsoluto");
       let pathAbsoluto = pathSimple.replace(/\\/g, "\\\\");
+      console.log("Path Absoluto:", pathAbsoluto);
 
       // Enviar el path absoluto al backend
       // Hacer la solicitud POST al servidor para enviar el path absoluto
       await axios.post("http://localhost:3000/filesPath", { pathAbsoluto });
 
       // Obtener la URL del archivo
-      const fileUrl = `http://localhost:3000/filesOpen/${file}`;
+      const fileUrl = `http://localhost:3000/filesOpen/${encodeURIComponent(file)}`;
+      console.log("URL del archivo:", fileUrl);
 
       // Abrir el archivo en una nueva pestaña
       window.open(fileUrl, "_blank");
@@ -331,15 +333,17 @@ const ActivosPage = () => {
         if (!files.length) {
           //alert("No se seleccionaron archivos.");
           await Swal.fire({
-            icon: 'warning',
-            title: 'No se seleccionaron archivos',
-            text: 'Por favor selecciona al menos un archivo para importar.',
+            icon: "warning",
+            title: "No se seleccionaron archivos",
+            text: "Por favor selecciona al menos un archivo para importar.",
           });
           return;
         }
 
         const formData = new FormData();
-        Array.from(files).forEach((file) => formData.append("files", file));
+        Array.from(files).forEach((file) =>
+          formData.append("files", file, file.name)
+        );
         formData.append("carpetaId", folder.Id_carpeta);
 
         try {
@@ -354,8 +358,8 @@ const ActivosPage = () => {
           );
 
           await Swal.fire({
-            icon: 'success',
-            title: 'Archivos importados',
+            icon: "success",
+            title: "Archivos importados",
             text: response.data.message,
           });
 
@@ -365,9 +369,9 @@ const ActivosPage = () => {
           console.error("Error al subir archivos:", error);
           //alert("Error al subir archivos.");
           await Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Error al subir archivos.',
+            icon: "error",
+            title: "Error",
+            text: "Error al subir archivos.",
           });
         }
       };
@@ -378,9 +382,9 @@ const ActivosPage = () => {
       console.error("Error al subir archivos:", error);
       //alert("Error al subir archivos.");
       await Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Error al subir archivos.',
+        icon: "error",
+        title: "Error",
+        text: "Error al subir archivos.",
       });
     }
   };
@@ -678,9 +682,7 @@ const ActivosPage = () => {
                   <TableBody>
                     {selectedFiles.map((file, index) => (
                       <TableRow key={index}>
-                        <TableCell>
-                          {decodeURIComponent(escape(file))}
-                        </TableCell>
+                        <TableCell>{file}</TableCell>
                         <TableCell>
                           <Button
                             variant="contained"

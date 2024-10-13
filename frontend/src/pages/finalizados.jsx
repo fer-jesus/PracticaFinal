@@ -111,13 +111,15 @@ const FinalizadosPage = () => {
 
       const pathSimple = localStorage.getItem("pathAbsoluto");
       let pathAbsoluto = pathSimple.replace(/\\/g, "\\\\");
+      console.log("Path Absoluto:", pathAbsoluto);
 
       // Enviar el path absoluto al backend
       // Hacer la solicitud POST al servidor para enviar el path absoluto
       await axios.post("http://localhost:3000/filesPath", { pathAbsoluto });
 
       // Obtener la URL del archivo
-      const fileUrl = `http://localhost:3000/filesOpen/${file}`;
+      const fileUrl = `http://localhost:3000/filesOpen/${encodeURIComponent(file)}`;
+      console.log("URL del archivo:", fileUrl);
 
       // Abrir el archivo en una nueva pestaña
       window.open(fileUrl, "_blank");
@@ -403,7 +405,7 @@ const FinalizadosPage = () => {
                 <TableBody>
                   {selectedFiles.map((file, index) => (
                     <TableRow key={index}>
-                      <TableCell>{decodeURIComponent(escape(file))}</TableCell>
+                      <TableCell>{file}</TableCell>
                       <TableCell>
                         <Button
                           variant="contained"
