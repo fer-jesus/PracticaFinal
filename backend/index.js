@@ -21,9 +21,10 @@ app.use(express.json()); // Para parsear el cuerpo de las solicitudes en formato
 app.use(fileUpload()); // Middleware para manejar archivos
 
 const rutasEstados = {
-  Activos: "E:\\Expedientes\\Activos",
-  Pendientes: "E:\\Expedientes\\Pendientes",
-  Finalizados: "E:\\Expedientes\\Finalizados",
+  
+  Activos: "C:Users\\JFGL\\Desktop\\Expedientes\\Activos",
+  Pendientes: "C:Users\\JFGL\\Desktop\\Expedientes\\Pendientes",
+  Finalizados: "C:Users\\JFGL\\Desktop\\Expedientes\\Finalizados",
 };
 
 // Ruta para registrar usuarios
@@ -488,7 +489,7 @@ app.delete("/delete-folder", (req, res) => {
     console.log("Ruta del expediente:", folderPath);
 
     // Definir la ruta de backup
-    const backupDir = "E:/Expedientes/Eliminados";
+    const backupDir = "C:Users\\JFGL\\Desktop\\Expedientes\\Eliminados";
     const folderName = path.basename(folderPath); // Obtener el nombre de la carpeta
     const backupPath = path.join(backupDir, folderName); // Crear la ruta de backup
 

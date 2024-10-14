@@ -109,8 +109,8 @@ const ActivosPage = () => {
       const directoryHandle = await window.showDirectoryPicker();
 
       let pathRelativo = `${directoryHandle.name}\\${newFolderName}`;
-                  
-      let path = `E:\\Expedientes\\${pathRelativo}`;
+
+      let path = `C:\\Users\\JFGL\\Desktop\\Expedientes\\${pathRelativo}`;
 
       // Verificar si la carpeta ya existe en el sistema de archivos
       try {
@@ -167,6 +167,10 @@ const ActivosPage = () => {
           title: "¡Carpeta creada!",
           text: "La carpeta ha sido creada y registrada exitosamente.",
         });
+
+        // Limpia los campos de texto después de crear la carpeta
+        setNewFolderName(""); // Limpiar el nombre
+        setNewFolderDescription(""); // Limpiar la descripción
       } else {
         //alert("Error al registrar la carpeta.");
         await Swal.fire({
@@ -239,7 +243,9 @@ const ActivosPage = () => {
       await axios.post("http://localhost:3000/filesPath", { pathAbsoluto });
 
       // Obtener la URL del archivo
-      const fileUrl = `http://localhost:3000/filesOpen/${encodeURIComponent(file)}`;
+      const fileUrl = `http://localhost:3000/filesOpen/${encodeURIComponent(
+        file
+      )}`;
       console.log("URL del archivo:", fileUrl);
 
       // Abrir el archivo en una nueva pestaña
@@ -626,7 +632,7 @@ const ActivosPage = () => {
             padding: "6px 12px",
             backgroundColor: "#171F4D",
             "&:hover": {
-              backgroundColor: "#0f1436", 
+              backgroundColor: "#0f1436",
             },
           }}
         >
