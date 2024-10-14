@@ -110,7 +110,7 @@ const ActivosPage = () => {
 
       let pathRelativo = `${directoryHandle.name}\\${newFolderName}`;
 
-      let path = `C:\\Users\\JFGL\\Desktop\\Expedientes\\${pathRelativo}`;
+      let path = `E:\\Expedientes\\${pathRelativo}`;
 
       // Verificar si la carpeta ya existe en el sistema de archivos
       try {
