@@ -81,7 +81,7 @@ const ActivosPage = () => {
     setNewFolderName("");
   };
 
-  //const pathRelativo= "C:\\Users\\JFGL\\Desktop\\Expedientes\\Activos";
+  //const pathRelativo= "E:\Expedientes";
 
   const handleCreateFolder = async () => {
     if (!newFolderName.trim()) {
@@ -109,8 +109,8 @@ const ActivosPage = () => {
       const directoryHandle = await window.showDirectoryPicker();
 
       let pathRelativo = `${directoryHandle.name}\\${newFolderName}`;
-
-      let path = `C:\\Users\\JFGL\\Desktop\\Expedientes\\${pathRelativo}`;
+                  
+      let path = `E:\\Expedientes\\${pathRelativo}`;
 
       // Verificar si la carpeta ya existe en el sistema de archivos
       try {
