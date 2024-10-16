@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const bcrypt = require("bcrypt"); // bcrypt para el hash de contraseñas
+const bcrypt = require("bcryptjs"); // bcrypt para el hash de contraseñas
 const db = require("./database"); // configuración de la base de datos
 const fs = require("fs"); // módulo fs para el manejo del sistema de archivos
 const path = require("path"); // módulo path para manejar rutas de archivos
@@ -10,7 +10,6 @@ const iconv = require('iconv-lite');// iconv-lite para convertir la codificació
 const { jsPDF } = require("jspdf");
 require("jspdf-autotable");
 const { execFile } = require("child_process"); // child_process para ejecutar comandos del sistema operativo en Node.js se usa para abrir NAPS2
-
 const app = express();
 const PORT = 3000;
 var pathFrontend = "";
