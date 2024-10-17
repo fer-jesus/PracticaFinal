@@ -1,13 +1,17 @@
-# FROM node:20-alpine
+FROM node:20.11.1
 
-# WORKDIR /app
+WORKDIR /app
 
-# COPY package*.json ./
+#COPY .frontend/package*.json ./
+COPY package*.json ./
 
-# RUN npm install
+RUN npm install
 
-# COPY . .
+COPY . .
 
-# #EXPOSE 5173
+#EXPOSE 5173
 
-# CMD ["npm", "run", "dev"]
+#RUN npm run build
+
+CMD ["npm", "run", "dev"]
+

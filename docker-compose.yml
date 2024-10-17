@@ -1,10 +1,24 @@
 #version: '3'
 services:
+ # Servicio para la base de datos MySQL
+  db:
+    image: mysql:5.7
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - app-network
+
   # Servicio para el backend (Node.js)
-  node:
+  backend:
     build: 
-      context: .
-      dockerfile: ./backend/Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: backend
     ports:
       - "5000:5000"
@@ -14,41 +28,32 @@ services:
     networks:
       - app-network
     environment:
-      - NODE_ENV=development
-      - PORT=5000
-      - DB_HOST=db
-      - DB_USER=root
-      - DB_PASSWORD=1234
-      - DB_NAME=practica_final
+       - NODE_ENV=${NODE_ENV}
+       - PORT=${PORT}
+       - DB_HOST=${DB_HOST}
+       - DB_USER=${DB_USER}
+       - DB_PASSWORD=${DB_PASSWORD}
+       - DB_NAME=${DB_NAME}
+       - DB_PORT=${DB_PORT}
     depends_on:
       - db
 
-#   # Servicio para el frontend (React)
-#   frontend:
-#     build: ./frontend
-#     container_name: frontend
-#     ports:
-#       - "5173:5173"
-#     volumes:
-#       - ./frontend:/app
-#     networks:
-#       - app-network
-#     depends_on:
-#       - backend
-
-  # Servicio para la base de datos MySQL
-  db:
-    image: mysql:5.7
-    container_name: mysql-db
-    environment:
-      MYSQL_ROOT_PASSWORD: 1234
-      MYSQL_DATABASE: practica_final
+  # Servicio para el frontend (React)
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
     ports:
-      - "3306:3306"
+      - "5173:5173"
     volumes:
-      - db_data:/var/lib/mysql
+      - ./frontend:/app
     networks:
       - app-network
+    environment:
+      - REACT_APP_BACKEND_URL=http://backend:5000
+    depends_on:
+      - backend
 
 networks:
   app-network:
