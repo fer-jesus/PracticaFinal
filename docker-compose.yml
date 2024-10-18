@@ -7,6 +7,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
     ports:
       - "3306:3306"
     volumes:
@@ -27,8 +28,10 @@ services:
       - /app/node_modules
     networks:
       - app-network
+    env_file:
+      - ./backend/.env
     environment:
-       - NODE_ENV=${NODE_ENV}
+       #- NODE_ENV=${NODE_ENV}
        - PORT=${PORT}
        - DB_HOST=${DB_HOST}
        - DB_USER=${DB_USER}
