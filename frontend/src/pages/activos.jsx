@@ -108,9 +108,9 @@ const ActivosPage = () => {
       // Selección del directorio
       const directoryHandle = await window.showDirectoryPicker();
 
-      let pathRelativo = `${directoryHandle.name}\\${newFolderName}`;
+      let pathRelativo = `${directoryHandle.name}/${newFolderName}`;
 
-      let path = `E:\\Expedientes\\${pathRelativo}`;
+      let path = `/app/Expedientes/${pathRelativo}`;
 
       // Verificar si la carpeta ya existe en el sistema de archivos
       try {
@@ -318,7 +318,13 @@ const ActivosPage = () => {
       await axios.get("http://localhost:3000/abrir-naps2");
       //alert(response.data.message);  // Mostrar un mensaje cuando NAPS2 se abra
     } catch (error) {
-      alert("Hubo un error al intentar abrir NAPS2.");
+      //alert("Hubo un error al intentar abrir NAPS2.");
+      Swal.fire({ 
+        icon: "error",
+        title: "Error",
+        text: "Hubo un error al intentar abrir NAPS2.",
+        confirmButtonText: "OK",
+      });
       console.error(error);
     }
   };

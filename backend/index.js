@@ -9,22 +9,56 @@ const fileUpload = require("express-fileupload");
 const iconv = require('iconv-lite');// iconv-lite para convertir la codificación de caracteres
 const { jsPDF } = require("jspdf");
 require("jspdf-autotable");
-const { execFile } = require("child_process"); // child_process para ejecutar comandos del sistema operativo en Node.js se usa para abrir NAPS2
+const { exec } = require("child_process"); // child_process para ejecutar comandos del sistema operativo en Node.js se usa para abrir NAPS2
 const app = express();
+const axios = require('axios');
 const PORT = 3000;
 var pathFrontend = "";
+
+const rutasEstados = {
+  Activos: "/app/Expedientes/ACTIVOS",
+  Pendientes: "/app/Expedientes/PENDIENTES",
+  Finalizados: "/app/Expedientes/FINALIZADOS",
+  Eliminados: "/app/Expedientes/Eliminados",
+};
+
 
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json()); // Para parsear el cuerpo de las solicitudes en formato JSON
 app.use(fileUpload()); // Middleware para manejar archivos
 
-const rutasEstados = {
-  
-  Activos: "E:\\Expedientes\\ACTIVOS",
-  Pendientes: "E:\\Expedientes\\PENDIENTES",
-  Finalizados: "E:\\Expedientes\\FINALIZADOS",
+// Ruta del archivo SQL
+const sqlFilePath = path.join(__dirname, '../basededatos/script.sql');
+
+// Leer y ejecutar el script SQL
+const executeSqlScript = () => {
+  fs.readFile(sqlFilePath, 'utf8', (err, sql) => {
+    if (err) {
+      console.error('Error al leer el archivo SQL:', err);
+      return;
+    }
+
+    // Ejecutar el script SQL
+    db.query(sql, (err, result) => {
+      if (err) {
+        console.error('Error al ejecutar el script SQL:', err);
+      } else {
+        console.log('Script SQL ejecutado correctamente');
+      }
+    });
+  });
 };
+
+// Ejecutar el script SQL al inicio de la aplicación
+db.connect((err) => {
+  if (err) {
+    console.error('Error conectando a la base de datos:', err);
+    return;
+  }
+  console.log('Conectado a la base de datos');
+  executeSqlScript(); // Ejecutar el script después de la conexión
+});
 
 // Ruta para registrar usuarios
 app.post("/register", async (req, res) => {
@@ -383,26 +417,20 @@ app.put("/cambiarEstado", (req, res) => {
   });
 });
 
-// Ruta para abrir NAPS2
-app.get("/abrir-naps2", (req, res) => {
-  // Ruta completa al archivo ejecutable de NAPS2
-  const command = "C:\\Program Files\\NAPS2\\NAPS2.exe";
+// Ruta para abrir NAPS2 desde el servicio externo
+app.get("/abrir-naps2", async (req, res) => {
+  try {
+    // Realiza la petición HTTP al servicio de NAPS2 que corre en el host
+    const response = await axios.get("http://naps2-service:4000/abrir-naps2");
 
-  execFile(command, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Error al abrir NAPS2: ${error.message}`);
-      return res.status(500).json({ error: "No se pudo abrir NAPS2" });
-    }
-
-    if (stderr) {
-      console.error(`Error en el proceso de apertura: ${stderr}`);
-      return res.status(500).json({ error: "Hubo un problema al abrir NAPS2" });
-    }
-
-    // Respuesta exitosa
-    return res.status(200).json({ message: "NAPS2 abierto con éxito" });
-  });
+    // Devuelve la respuesta del servicio de NAPS2
+    return res.status(200).json(response.data);
+  } catch (error) {
+    console.error(`Error al intentar abrir NAPS2: ${error.message}`);
+    return res.status(500).json({ error: "No se pudo abrir NAPS2 desde el host" });
+  }
 });
+
 
 // Ruta para subir archivos al expediente seleccionado
 app.post("/upload-file", (req, res) => {
@@ -488,13 +516,13 @@ app.delete("/delete-folder", (req, res) => {
     console.log("Ruta del expediente:", folderPath);
 
     // Definir la ruta de backup
-    const backupDir = "E:\\Expedientes\\Eliminados";
+    const rutasEstados = "/app/Expedientes/Eliminados";
     const folderName = path.basename(folderPath); // Obtener el nombre de la carpeta
-    const backupPath = path.join(backupDir, folderName); // Crear la ruta de backup
+    const backupPath = path.join(rutasEstados, folderName); // Crear la ruta de backup
 
     // Copia la carpeta al directorio de "Eliminados" antes de eliminarla
     fs.promises
-      .mkdir(backupDir, { recursive: true }) // Crear el directorio si no existe
+      .mkdir(rutasEstados, { recursive: true }) // Crear el directorio si no existe
       .then(() => fs.promises.rename(folderPath, backupPath)) // Mover la carpeta a "Eliminados"
       .then(() => {
         console.log(`Carpeta respaldada en ${backupPath}`);
