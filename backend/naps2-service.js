@@ -6,7 +6,7 @@ const PORT = 4000; // Puerto donde el servicio de NAPS2 estará escuchando
 
 // Ruta para abrir NAPS2
 app.get('/abrir-naps2', (req, res) => {
-  const command = `"C:/Program Files/NAPS2/NAPS2.exe"`; // Ruta de NAPS2 en el host
+  const command = "/app/NAPS2/NAPS2.exe"; // Ruta de NAPS2 en el host
 
   exec(command, (error, stdout, stderr) => {
     if (error) {

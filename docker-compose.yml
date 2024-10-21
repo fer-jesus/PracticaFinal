@@ -45,7 +45,7 @@ services:
     depends_on:
       - db
     command: sh -c "while ! nc -z db 3306 ; do sleep 1 ; done && npm run dev"
-    
+
 # Servicio para interactuar con el host y ejecutar NAPS2
   naps2-service:
     image: node:14 # Usa una imagen de Node.js para ejecutar el servicio
@@ -56,7 +56,7 @@ services:
       - "4000:4000" # Puerto para acceder al servicio de NAPS2
     networks:
       - app-network
-    command: node /app/naps2-service.js # Comando para ejecutar el servicio
+    command: node /app/backend/naps2-service.js # Comando para ejecutar el servicio
 
 #   # Servicio para el frontend (React)
 #   frontend:

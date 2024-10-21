@@ -9,9 +9,8 @@ const fileUpload = require("express-fileupload");
 const iconv = require('iconv-lite');// iconv-lite para convertir la codificación de caracteres
 const { jsPDF } = require("jspdf");
 require("jspdf-autotable");
-const { exec } = require("child_process"); // child_process para ejecutar comandos del sistema operativo en Node.js se usa para abrir NAPS2
+//const { exec } = require("child_process"); // child_process para ejecutar comandos del sistema operativo en Node.js se usa para abrir NAPS2
 const app = express();
-const axios = require('axios');
 const PORT = 3000;
 var pathFrontend = "";
 
@@ -417,20 +416,19 @@ app.put("/cambiarEstado", (req, res) => {
   });
 });
 
-// Ruta para abrir NAPS2 desde el servicio externo
-app.get("/abrir-naps2", async (req, res) => {
-  try {
-    // Realiza la petición HTTP al servicio de NAPS2 que corre en el host
-    const response = await axios.get("http://naps2-service:4000/abrir-naps2");
+// // Ruta para abrir NAPS2 desde el servicio externo
+// app.get("/abrir-naps2", async (req, res) => {
+//   try {
+//     // Realiza la petición HTTP al servicio de NAPS2 que corre en el host
+//     const response = await axios.get("http://naps2-service:4000/abrir-naps2");
 
-    // Devuelve la respuesta del servicio de NAPS2
-    return res.status(200).json(response.data);
-  } catch (error) {
-    console.error(`Error al intentar abrir NAPS2: ${error.message}`);
-    return res.status(500).json({ error: "No se pudo abrir NAPS2 desde el host" });
-  }
-});
-
+//     // Devuelve la respuesta del servicio de NAPS2
+//     return res.status(200).json(response.data);
+//   } catch (error) {
+//     console.error(`Error al intentar abrir NAPS2: ${error.message}`);
+//     return res.status(500).json({ error: "No se pudo abrir NAPS2 desde el host" });
+//   }
+// });
 
 // Ruta para subir archivos al expediente seleccionado
 app.post("/upload-file", (req, res) => {
