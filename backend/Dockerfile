@@ -9,8 +9,8 @@ RUN npm install
 
 COPY . .
 
-# Expone el puerto 5000
-EXPOSE 5000
+# Expone el puerto 3000
+EXPOSE 3000
 
 #RUN npm run build
 

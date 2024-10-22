@@ -1,18 +1,14 @@
-# FROM node:20
+FROM node:20
 
-# WORKDIR /app
+WORKDIR /app
 
-# #COPY .frontend/package*.json ./
-# COPY package*.json package-lock.json ./
+COPY package*.json ./
 
-# RUN npm install
+RUN npm install
 
-# COPY . .
+COPY . .
 
-# # Elimina node_modules antes de reinstalar
-# RUN rm -rf node_modules 
+EXPOSE 5173
 
-# #EXPOSE 5173
-
-# CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "dev", "--", "--host"]
 

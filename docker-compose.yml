@@ -45,35 +45,38 @@ services:
     depends_on:
       - db
     command: sh -c "while ! nc -z db 3306 ; do sleep 1 ; done && npm run dev"
-
-# Servicio para interactuar con el host y ejecutar NAPS2
-  naps2-service:
-    image: node:14 # Usa una imagen de Node.js para ejecutar el servicio
-    container_name: naps2-service
-    volumes:
-      - "C:/Program Files/NAPS2:/app/NAPS2" # Ruta de NAPS2 en el host
-    ports:
-      - "4000:4000" # Puerto para acceder al servicio de NAPS2
-    networks:
-      - app-network
-    command: node /app/backend/naps2-service.js # Comando para ejecutar el servicio
-
-#   # Servicio para el frontend (React)
-#   frontend:
+    
+# # Servicio para interactuar con el host y ejecutar NAPS2
+#   naps2-service:
 #     build: 
-#       context: ./frontend
-#       dockerfile: Dockerfile
-#     container_name: frontend
+#       context: ./backend  # Usa el mismo contexto que el backend
+#       dockerfile: Dockerfile  # Usa el mismo Dockerfile
+#     container_name: naps2-service
 #     ports:
-#       - "5173:5173"
+#       - "4000:4000"
 #     volumes:
-#       - ./frontend:/app
+#       - "C:/Program Files/NAPS2:/app/NAPS2"  # Ruta de NAPS2 en el host
 #     networks:
 #       - app-network
-#     environment:
-#       - REACT_APP_BACKEND_URL=http://backend:5000
-#     depends_on:
-#       - backend
+#     command: node /app/naps2-service.js
+
+# Servicio para el frontend (React)
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports: 
+      - "5173:5173"
+    volumes: 
+      - ./frontend:/app
+      - /app/node_modules
+    networks: 
+      - app-network
+    environment: 
+      - VITE_REACT_APP_BACKEND_URL=http://backend:3000 # Usa la URL del backend con Docker
+    depends_on: 
+      - backend
 
 networks:
   app-network:
