@@ -118,7 +118,7 @@ const RegisterPage = () => {
     }
 
     try {
-      const response = await axios.post("http://backend:3000/register", {
+      const response = await axios.post("http://localhost:3000/register", {
         nombres: formData.nombres,
         apellidos: formData.apellidos,
         telefono: formData.telefono,

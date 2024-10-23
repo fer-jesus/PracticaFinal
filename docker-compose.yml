@@ -9,7 +9,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_DATABASE: expedientesBP
-      TZ: "America/Guatemala" # Zona horaria
     ports:
       - "3306:3306"
     volumes:
@@ -28,10 +27,8 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
-      - ./basededatos:/basededatos # Montar la carpeta donde está el script.sql
+      - ./basededatos:/basededatos 
       - "E:/Expedientes:/app/Expedientes" # ruta de los expedientes
-    networks:
-      - app-network
     # env_file:
     #   - ./backend/.env
     environment:
@@ -41,7 +38,8 @@ services:
        - DB_PASSWORD=123456
        - DB_NAME=expedientesBP
        - DB_PORT=3306
-       - TZ="America/Guatemala"
+    networks:
+      - app-network
     depends_on:
       - db
     command: sh -c "while ! nc -z db 3306 ; do sleep 1 ; done && npm run dev"
@@ -71,10 +69,10 @@ services:
     volumes: 
       - ./frontend:/app
       - /app/node_modules
-    networks: 
-      - app-network
     environment: 
       - VITE_REACT_APP_BACKEND_URL=http://backend:3000 # Usa la URL del backend con Docker
+    networks: 
+      - app-network
     depends_on: 
       - backend
 

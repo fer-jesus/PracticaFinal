@@ -54,7 +54,7 @@ const ActivosPage = () => {
   const fetchFolders = async () => {
     try {
       const response = await axios.get(
-        "http://backend:3000/get-folders/Activos"
+        "http://localhost:3000/get-folders/Activos"
       );
       console.log(response.data);
       setFolders(response.data);

@@ -1,4 +1,10 @@
-FROM node:20
+FROM node:20-alpine3.19
+
+RUN apk add --no-cache tzdata
+
+ENV TZ="America/Guatemala"
+
+RUN cp /usr/share/zoneinfo/America/Guatemala /etc/localtime && echo "America/Guatemala" > /etc/timezone
 
 WORKDIR /app
 
