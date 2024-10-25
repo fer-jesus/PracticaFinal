@@ -9,7 +9,7 @@ const fileUpload = require("express-fileupload");
 const iconv = require('iconv-lite');// iconv-lite para convertir la codificación de caracteres
 const { jsPDF } = require("jspdf");
 require("jspdf-autotable");
-const { execFile } = require("child_process"); // child_process para ejecutar comandos del sistema operativo en Node.js se usa para abrir NAPS2
+//const { execFile } = require("child_process"); // child_process para ejecutar comandos del sistema operativo en Node.js se usa para abrir NAPS2
 const app = express();
 const PORT = 3000;
 var pathFrontend = "";
@@ -416,18 +416,15 @@ app.put("/cambiarEstado", (req, res) => {
   });
 });
 
-// Ruta para abrir NAPS2 desde el servicio externo
+//ruta para abrir NAPS2
 app.get("/abrir-naps2", async (req, res) => {
   try {
-    // Realiza la petición HTTP al servicio de NAPS2 que corre en el host
-    const command = await axios.get("http://naps2-service:4000/abrir-naps2");
-
-    
-    // Devuelve la respuesta del servicio de NAPS2
-    return res.status(200).json(response.data);
+    // Realiza una solicitud al servicio intermedio en el contenedor `naps2-service`
+    const response = await axios.get("http://naps2-service:3001/abrir-naps2");
+    res.status(200).json(response.data);
   } catch (error) {
-    console.error(`Error al intentar abrir NAPS2: ${error.message}`);
-    return res.status(500).json({ error: "No se pudo abrir NAPS2 desde el host" });
+    console.error("Error al comunicarse con el servicio de NAPS2:", error.message);
+    res.status(500).json({ error: 'Error al intentar abrir NAPS2' });
   }
 });
 
@@ -616,7 +613,6 @@ app.get("/reporte-estados/:estado", (req, res) => {
 
     // Preparar los datos para jsPDF AutoTable
     const tableColumn = [
-      "ID",
       "Nombre del Expediente",
       "FechaCreación",
       "FechaCE",
@@ -627,7 +623,6 @@ app.get("/reporte-estados/:estado", (req, res) => {
     // Llena las filas con los resultados de la base de datos
     results.forEach((expediente) => {
       const expedienteData = [
-        expediente.Id_carpeta,
         expediente.Nombre_expediente,
         expediente.Fecha_creación
           ? new Date(expediente.Fecha_creación).toISOString().split("T")[0]

@@ -15,12 +15,14 @@ import {
   TextField,
   InputAdornment,
   Dialog,
+  MenuItem,
+  Select,
   DialogTitle,
   DialogContent,
   DialogActions,
   DialogContentText,
 } from "@mui/material";
-import { Visibility, Delete, Search } from "@mui/icons-material";
+import { Visibility,  CompareArrows, Delete, Search } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
@@ -35,10 +37,13 @@ const FinalizadosPage = () => {
   const [openVisualizar, setOpenVisualizar] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [selectedFolder, setSelectedFolder] = useState(null);
+  const [openCambiarEstado, setOpenCambiarEstado] = useState(false);
+  const [nuevoEstado, setNuevoEstado] = useState("");
+  const [folderToChange, setFolderToChange] = useState(null);
   const [openEliminar, setOpenEliminar] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState(null);
 
-  useEffect(() => {
+ 
     const fetchFolders = async () => {
       try {
         const response = await axios.get(
@@ -57,6 +62,7 @@ const FinalizadosPage = () => {
         }
       }
     };
+    useEffect(() => {
     fetchFolders();
   }, []); // Se ejecuta cuando el componente se monta
 
@@ -133,6 +139,55 @@ const FinalizadosPage = () => {
     setOpenVisualizar(false);
     setSelectedFiles([]);
     localStorage.removeItem("pathAbsoluto");
+  };
+
+  const handleCambiarEstado = async () => {
+    if (!folderToChange || !nuevoEstado) {
+      //alert("Seleccione una carpeta y un estado válido.");
+      Swal.fire({
+        icon: "warning",
+        title: "Advertencia",
+        text: "Seleccione una carpeta y un estado válido.",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+
+    try {
+      // Realiza la solicitud PUT para cambiar el estado de la carpeta
+      await axios.put("http://localhost:3000/cambiarEstado", {
+        idCarpeta: folderToChange.Id_carpeta, // Enviar el ID correcto de la carpeta
+        nuevoEstado, // Enviar el nuevo estado a la ruta
+        //fechaCambioEstado: new Date().toISOString().split("T")[0],
+      });
+
+      //alert("El estado ha sido cambiado exitosamente y la carpeta fue movida.");
+      Swal.fire({
+        icon: "success",
+        title: "Éxito",
+        text: "El expediente ha sido actualizado.",
+        confirmButtonText: "OK",
+      });
+
+      fetchFolders(); //// Vuelve a cargar las carpetas de activos actualizadas
+      setOpenCambiarEstado(false);
+      setFolderToChange(null);
+      setNuevoEstado("");
+    } catch (error) {
+      console.error("Error al cambiar el estado:", error);
+      //alert("Error al cambiar el estado del expediente.");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Error al cambiar el estado del expediente.",
+        confirmButtonText: "OK",
+      });
+    }
+  };
+
+  const handleOpenCambiarEstado = (folder) => {
+    setFolderToChange(folder); // Establece la carpeta seleccionada
+    setOpenCambiarEstado(true);
   };
 
   const handleOpenEliminar = (folder) => {
@@ -230,6 +285,12 @@ const FinalizadosPage = () => {
             sx={{ color: "#171F4D" }}
           >
             <Visibility />
+          </IconButton>
+          <IconButton
+            onClick={() => handleOpenCambiarEstado(row)}
+            sx={{ color: "#171F4D" }}
+          >
+            <CompareArrows />
           </IconButton>
           <IconButton
             onClick={() => handleOpenEliminar(row)}
@@ -430,7 +491,37 @@ const FinalizadosPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
+      <Dialog
+          open={openCambiarEstado}
+          onClose={() => setOpenCambiarEstado(false)}
+        >
+          <DialogTitle>Cambiar Estado del Expediente</DialogTitle>
+          <DialogContent>
+            <Select
+              label="Nuevo Estado"
+              variant="outlined"
+              size="small"
+              value={nuevoEstado}
+              onChange={(e) => setNuevoEstado(e.target.value)}
+              fullWidth
+              displayEmpty
+            >
+              <MenuItem value="" disabled>
+                <em>Elija el estado</em>
+              </MenuItem>
+              <MenuItem value="Activos">Activos</MenuItem>
+              <MenuItem value="Pendientes">Pendientes</MenuItem>
+            </Select>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenCambiarEstado(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCambiarEstado} color="primary">
+              Cambiar
+            </Button>
+          </DialogActions>
+        </Dialog>
       <Dialog open={openEliminar} onClose={handleCloseEliminar}>
         <DialogTitle>Eliminar Carpeta</DialogTitle>
         <DialogContent>

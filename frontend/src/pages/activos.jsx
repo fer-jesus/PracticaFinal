@@ -315,8 +315,8 @@ const ActivosPage = () => {
   const handleScan = async () => {
     try {
       // Hacer una solicitud GET a la API para abrir NAPS2
-      await axios.get("http://localhost:4000/abrir-naps2");
-      //alert(response.data.message);  // Mostrar un mensaje cuando NAPS2 se abra
+      const response = await axios.get("http://localhost:3001/abrir-naps2");
+      alert(response.data.message);  // Mostrar un mensaje cuando NAPS2 se abra
     } catch (error) {
       //alert("Hubo un error al intentar abrir NAPS2.");
       Swal.fire({ 
@@ -465,7 +465,6 @@ const ActivosPage = () => {
           >
             <CompareArrows />
           </IconButton>
-
           <IconButton onClick={Escanear} sx={{ color: "#171F4D" }}>
             <Scanner />
           </IconButton>
@@ -721,7 +720,6 @@ const ActivosPage = () => {
             </Button>
           </DialogActions>
         </Dialog>
-
         <Dialog
           open={openCambiarEstado}
           onClose={() => setOpenCambiarEstado(false)}

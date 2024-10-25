@@ -43,20 +43,6 @@ services:
     depends_on:
       - db
     command: sh -c "while ! nc -z db 3306 ; do sleep 1 ; done && npm run dev"
-    
-# # Servicio para interactuar con el host y ejecutar NAPS2
-#   naps2-service:
-#     build: 
-#       context: ./backend  # Usa el mismo contexto que el backend
-#       dockerfile: Dockerfile  # Usa el mismo Dockerfile
-#     container_name: naps2-service
-#     ports:
-#       - "4000:4000"
-#     volumes:
-#       - "C:/Program Files/NAPS2:/app/NAPS2"  # Ruta de NAPS2 en el host
-#     networks:
-#       - app-network
-#     command: node /app/naps2-service.js
 
 # Servicio para el frontend (React)
   frontend:
@@ -75,6 +61,17 @@ services:
       - app-network
     depends_on: 
       - backend
+
+  naps2-service:
+    build:
+      context: ./naps2-service
+      dockerfile: Dockerfile
+    ports:
+    - "3001:3001"  # Mapear el puerto 3001 del contenedor al 3001 del host
+    volumes:
+    - "/c/Program Files/NAPS2:/app/NAPS2"  # Mapea la ruta local de NAPS2.exe
+    networks:
+    - app-network
 
 networks:
   app-network:
