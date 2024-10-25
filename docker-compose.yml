@@ -69,7 +69,7 @@ services:
     ports:
     - "3001:3001"  # Mapear el puerto 3001 del contenedor al 3001 del host
     volumes:
-    - "/c/Program Files/NAPS2:/app/NAPS2"  # Mapea la ruta local de NAPS2.exe
+    - "/C/Program Files/NAPS2:/app/NAPS2"  # Mapea la ruta local de NAPS2.exe
     networks:
     - app-network
 

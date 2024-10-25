@@ -419,7 +419,7 @@ app.put("/cambiarEstado", (req, res) => {
 //ruta para abrir NAPS2
 app.get("/abrir-naps2", async (req, res) => {
   try {
-    // Realiza una solicitud al servicio intermedio en el contenedor `naps2-service`
+    // Solicitud al servicio naps2-service dentro de Docker
     const response = await axios.get("http://naps2-service:3001/abrir-naps2");
     res.status(200).json(response.data);
   } catch (error) {

@@ -315,7 +315,7 @@ const ActivosPage = () => {
   const handleScan = async () => {
     try {
       // Hacer una solicitud GET a la API para abrir NAPS2
-      const response = await axios.get("http://localhost:3001/abrir-naps2");
+      const response = await axios.get("http://localhost:3000/abrir-naps2");
       alert(response.data.message);  // Mostrar un mensaje cuando NAPS2 se abra
     } catch (error) {
       //alert("Hubo un error al intentar abrir NAPS2.");
