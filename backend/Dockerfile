@@ -16,7 +16,7 @@ RUN npm install
 COPY . .
 
 # Expone el puerto 3000
-EXPOSE 3000 3001
+EXPOSE 3000 
 
 #RUN npm run build
 

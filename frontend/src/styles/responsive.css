@@ -1,0 +1,129 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* General container adjustments for mobile */
+.container {
+    padding: 1rem;
+    max-width: 100%;
+}
+
+/* Styles for small screens (e.g., mobile) */
+@media (max-width: 768px) {
+    /* Ajustes de contenedores principales */
+    .page-container {
+        padding: 1rem;
+        margin: 0 auto;
+    }
+
+    /* Ajustes de DataTable */
+    .rdt_Table {
+        font-size: 0.8rem;
+        padding: 0.5rem;
+    }
+
+    /* Ajustes de botones */
+    .button {
+        width: 100%;
+        padding: 8px;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Campo de búsqueda */
+    .search-field {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    /* Ajustes de layout para pantallas pequeñas */
+    .header, .footer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .menu-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    /* Ajustes de tabla */
+    .table-container {
+        overflow-x: auto;
+    }
+}
+
+/* Styles for medium screens (e.g., tablets) */
+@media (min-width: 768px) and (max-width: 1200px) {
+    /* Ajustes de contenedores */
+    .page-container {
+        max-width: 90%;
+        margin: 0 auto;
+        padding: 1.5rem;
+    }
+
+    /* Ajustes de DataTable */
+    .rdt_Table {
+        font-size: 0.9rem;
+    }
+
+    /* Ajustes de botones */
+    .button {
+        width: auto;
+        padding: 10px;
+        font-size: 1rem;
+    }
+
+    /* Campo de búsqueda */
+    .search-field {
+        width: 80%;
+        margin: 1rem 0;
+    }
+
+    /* Disposición en dos columnas para botones */
+    .menu-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+}
+
+/* Styles for large screens (e.g., desktop) */
+@media (min-width: 1200px) {
+    /* Ajustes de contenedores */
+    .page-container {
+        max-width: 75%;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    /* Ajustes de DataTable */
+    .rdt_Table {
+        font-size: 1rem;
+        padding: 1rem;
+    }
+
+    /* Ajustes de botones */
+    .button {
+        width: auto;
+        padding: 12px;
+        font-size: 1.1rem;
+    }
+
+    /* Campo de búsqueda */
+    .search-field {
+        width: 60%;
+    }
+
+    /* Disposición de los botones en una fila */
+    .menu-buttons {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+    }
+}
