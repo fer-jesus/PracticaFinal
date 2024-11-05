@@ -1,5 +1,6 @@
 import { Button, Box } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
+import "../styles/menu.css";
 
 const StateButtons = ({ buttonSize = "medium", buttonStyle = {}}) => {
   const navigate = useNavigate();
@@ -49,6 +50,9 @@ const StateButtons = ({ buttonSize = "medium", buttonStyle = {}}) => {
         sx={{
           ...getButtonStyle('/activos'),
           ...buttonStyle,
+          width: { xs: "100%", sm: "75%", md: "50%" },
+          fontSize: { xs: "0.8rem", sm: "1rem", md: "1.2rem" },
+          marginBottom: { xs: "10px", sm: "0" },
           
         }}
         onClick={() => navigate('/activos')}
@@ -60,7 +64,10 @@ const StateButtons = ({ buttonSize = "medium", buttonStyle = {}}) => {
         size={buttonSize} 
         sx={{
           ...getButtonStyle('/pendientes'),
-          ...buttonStyle,  
+          ...buttonStyle,
+          width: { xs: "100%", sm: "75%", md: "50%" },
+          fontSize: { xs: "0.8rem", sm: "1rem", md: "1.2rem" },
+          marginBottom: { xs: "10px", sm: "0" },  
         }}
         onClick={() => navigate('/pendientes')}
       >
@@ -72,6 +79,9 @@ const StateButtons = ({ buttonSize = "medium", buttonStyle = {}}) => {
         sx={{
           ...getButtonStyle('/finalizados'),
           ...buttonStyle,   
+          width: { xs: "100%", sm: "75%", md: "50%" },
+          fontSize: { xs: "0.8rem", sm: "1rem", md: "1.2rem" },
+          marginBottom: { xs: "10px", sm: "0" },
         }}
         onClick={() => navigate('/finalizados')}
       >

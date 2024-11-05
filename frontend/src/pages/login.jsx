@@ -45,10 +45,12 @@ const LoginPage = () => {
       });
 
       if (response.status === 200) {
+        const token = response.data.token;
         console.log("Login exitoso");
 
         // Almacena el nombre de usuario en localStorage o sessionStorage
         localStorage.setItem("nombreUsuario", user);
+        localStorage.setItem("sessionToken", token);
 
         navigate("/menu");
       }
@@ -62,6 +64,12 @@ const LoginPage = () => {
         });
         setUser("");
         setPassword("");
+      } else if (error.response && error.response.status === 403) {
+        Swal.fire({
+          icon: "warning",
+          title: "Sesión activa",
+          text: "Ya tienes una sesión activa en otro navegador.",
+        });
       } else {
         console.log("Error al iniciar sesión:", error);
       }

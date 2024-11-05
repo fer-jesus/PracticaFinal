@@ -11,6 +11,7 @@ import ActivosPage from "./pages/activos";
 import PendientesPage from "./pages/pendientes";
 import FinalizadosPage from "./pages/finalizados";
 import "./index.css";
+import "./styles/responsive.css";
 
 const App = () => {
   return (

@@ -8,13 +8,16 @@ import {
   Box,
   Typography,
   Paper,
+  Checkbox,
+  FormControlLabel,
   InputAdornment,
   IconButton,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import "../styles/register.css";
+//import ReCAPTCHA from "react-google-recaptcha";
 import Swal from "sweetalert2";
+import "../styles/register.css";
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -34,7 +37,7 @@ const RegisterPage = () => {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  // const [myClass, setMyClass] = useState("");
+  const [isRobotChecked, setIsRobotChecked] = useState(false);
   const passwordRef = useRef(null);
   const confirmPasswordRef = useRef(null);
   const navigate = useNavigate();
@@ -110,14 +113,28 @@ const RegisterPage = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  
+  const handleRobotCheck = (e) => {
+    setIsRobotChecked(e.target.checked);
+  };
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (!validateForm()) {
+    if (!validateForm()) return;
+
+    if (!isRobotChecked) {
+      Swal.fire({
+        icon: "warning",
+        title: "Verificación requerida",
+        text: "Por favor, marca la casilla 'No soy un robot' para continuar.",
+      });
       return;
     }
 
     try {
+
+      //const recaptchaToken = await window.grecaptcha.execute('6LfbKHUqAAAAAGXqxhA3IyUqWuD73SCtvi0nWAF3', { action: 'register' });
+
       const response = await axios.post("http://localhost:3000/register", {
         nombres: formData.nombres,
         apellidos: formData.apellidos,
@@ -129,6 +146,8 @@ const RegisterPage = () => {
         rol: formData.rol,
         nombreUsuario: formData.nombreUsuario,
         contrasena: formData.contrasena,
+        // ...formData,
+        // recaptchaToken,
       });
 
       if (response.status === 200) {
@@ -390,6 +409,11 @@ const RegisterPage = () => {
               }}
               error={!!errors.confirmarContrasena}
               helperText={errors.confirmarContrasena}
+            />
+            <FormControlLabel
+              control={<Checkbox checked={isRobotChecked} onChange={handleRobotCheck} color="primary" />}
+              label="No soy un robot"
+              sx={{ marginTop: 2 }}
             />
             <Button
               type="submit"

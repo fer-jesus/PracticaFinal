@@ -1,15 +1,15 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcryptjs"); // bcrypt para el hash de contraseñas
 const db = require("./database"); // configuración de la base de datos
 const fs = require("fs"); // módulo fs para el manejo del sistema de archivos
 const path = require("path"); // módulo path para manejar rutas de archivos
 const fileUpload = require("express-fileupload");
-const iconv = require('iconv-lite');// iconv-lite para convertir la codificación de caracteres
+const iconv = require("iconv-lite"); // iconv-lite para convertir la codificación de caracteres
 const { jsPDF } = require("jspdf");
 require("jspdf-autotable");
-//const { execFile } = require("child_process"); // child_process para ejecutar comandos del sistema operativo en Node.js se usa para abrir NAPS2
 const app = express();
 const PORT = 3000;
 var pathFrontend = "";
@@ -21,6 +21,7 @@ const rutasEstados = {
   Eliminados: "/app/Expedientes/Eliminados",
 };
 
+const SECRET_KEY = "123456";
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -28,22 +29,22 @@ app.use(express.json()); // Para parsear el cuerpo de las solicitudes en formato
 app.use(fileUpload()); // Middleware para manejar archivos
 
 // Ruta del archivo SQL
-const sqlFilePath = path.join(__dirname, '../basededatos/script.sql');
+const sqlFilePath = path.join(__dirname, "../basededatos/script.sql");
 
 // Leer y ejecutar el script SQL
 const executeSqlScript = () => {
-  fs.readFile(sqlFilePath, 'utf8', (err, sql) => {
+  fs.readFile(sqlFilePath, "utf8", (err, sql) => {
     if (err) {
-      console.error('Error al leer el archivo SQL:', err);
+      console.error("Error al leer el archivo SQL:", err);
       return;
     }
 
     // Ejecutar el script SQL
     db.query(sql, (err, result) => {
       if (err) {
-        console.error('Error al ejecutar el script SQL:', err);
+        console.error("Error al ejecutar el script SQL:", err);
       } else {
-        console.log('Script SQL ejecutado correctamente');
+        console.log("Script SQL ejecutado correctamente");
       }
     });
   });
@@ -52,10 +53,10 @@ const executeSqlScript = () => {
 // Ejecutar el script SQL al inicio de la aplicación
 db.connect((err) => {
   if (err) {
-    console.error('Error conectando a la base de datos:', err);
+    console.error("Error conectando a la base de datos:", err);
     return;
   }
-  console.log('Conectado a la base de datos');
+  console.log("Conectado a la base de datos");
   executeSqlScript(); // Ejecutar el script después de la conexión
 });
 
@@ -94,7 +95,7 @@ app.post("/register", async (req, res) => {
               : "El correo ya está en uso.",
         });
       }
-       // Si el usuario no existe, procede a insertar el nuevo usuario
+      // Si el usuario no existe, procede a insertar el nuevo usuario
       // Hash de la contraseña antes de guardarla en la base de datos
       const hashedPassword = await bcrypt.hash(contrasena, 10);
 
@@ -159,10 +160,58 @@ app.post("/login", (req, res) => {
       return res.status(400).json({ error: "Contraseña incorrecta" });
     }
 
-    res.status(200).json({ message: "Inicio de sesión exitoso" });
+    // Crea un token de sesión único para el usuario
+    const token = jwt.sign({ id: user.Id_usuario }, SECRET_KEY, {
+      expiresIn: "1h",
+    });
+
+    // Guarda el token en la base de datos para la sesión activa
+    db.query(
+      "UPDATE USUARIO SET SessionToken = ? WHERE Id_usuario = ?",
+      [token, user.Id_usuario],
+      (updateErr) => {
+        if (updateErr) {
+          console.log("Usuario encontrado:", user); // Verificar si el usuario es encontrado
+          console.log("Token generado:", token);
+          return res.status(500).json({ error: "Error al iniciar sesión" });
+        }
+
+        res.status(200).json({ message: "Inicio de sesión exitoso" });
+      }
+    );
   });
 });
 
+// Middleware para verificar token de sesión en cada solicitud
+const verifySession = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) return res.status(401).json({ error: "Acceso no autorizado" });
+
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+
+    db.query(
+      "SELECT SessionToken FROM USUARIO WHERE Id_usuario = ?",
+      [decoded.id],
+      (err, results) => {
+        if (err || results[0].SessionToken !== token) {
+          return res.status(401).json({ error: "Sesión inválida" });
+        }
+
+        req.user = decoded;
+        next();
+      }
+    );
+  } catch (err) {
+    return res.status(401).json({ error: "Token expirado o inválido" });
+  }
+};
+
+// Ejemplo de ruta protegida
+app.get("/protected-route", verifySession, (req, res) => {
+  res.json({ message: "Bienvenido a la ruta protegida" });
+});
 
 // Ruta para registrar una nueva carpeta en la base de datos
 app.post("/register-folder", (req, res) => {
@@ -296,9 +345,8 @@ app.post("/filesPath", (req, res) => {
 // Ruta para abrir archivos basados en el path relativo
 app.get("/filesOpen/:fileName", (req, res) => {
   // Obtiene el nombre del archivo de los parámetros
-  const fileName =  decodeURIComponent(req.params.fileName);
+  const fileName = decodeURIComponent(req.params.fileName);
   console.log("fileName:", fileName);
-
 
   // Verifica que pathFrontend esté configurado
   if (!pathFrontend) {
@@ -416,18 +464,6 @@ app.put("/cambiarEstado", (req, res) => {
   });
 });
 
-//ruta para abrir NAPS2
-app.get("/abrir-naps2", async (req, res) => {
-  try {
-    // Solicitud al servicio naps2-service dentro de Docker
-    const response = await axios.get("http://naps2-service:3001/abrir-naps2");
-    res.status(200).json(response.data);
-  } catch (error) {
-    console.error("Error al comunicarse con el servicio de NAPS2:", error.message);
-    res.status(500).json({ error: 'Error al intentar abrir NAPS2' });
-  }
-});
-
 // Ruta para subir archivos al expediente seleccionado
 app.post("/upload-file", (req, res) => {
   try {
@@ -468,7 +504,10 @@ app.post("/upload-file", (req, res) => {
         : [req.files.files];
 
       files.forEach((file) => {
-        const nombreArchivoUtf8 = iconv.decode(Buffer.from(file.name, 'latin1'), 'utf8');
+        const nombreArchivoUtf8 = iconv.decode(
+          Buffer.from(file.name, "latin1"),
+          "utf8"
+        );
         const destino = path.join(carpetaRuta, nombreArchivoUtf8);
         fs.writeFileSync(destino, file.data); // Guardar el archivo en la carpeta
       });
@@ -581,6 +620,15 @@ app.get("/reporte-estados/:estado", (req, res) => {
     WHERE LOWER(E.Nombre_estado) = ?
   `;
 
+  // Consulta para obtener la cantidad de expedientes en el estado
+  const countQuery = `
+    SELECT COUNT(*) AS totalExpedientes
+    FROM CARPETA C
+    INNER JOIN CARPETA_ESTADO CE ON C.Id_carpeta = CE.Id_carpeta
+    INNER JOIN ESTADO E ON CE.Id_estado = E.Id_estado
+    WHERE LOWER(E.Nombre_estado) = ?
+  `;
+
   db.query(query, [estado], (err, results) => {
     if (err) {
       console.error("Error al obtener los datos para el reporte:", err);
@@ -589,100 +637,125 @@ app.get("/reporte-estados/:estado", (req, res) => {
         .json({ error: "Error al obtener los datos para el reporte." });
     }
 
-    // Crea el documento PDF usando jsPDF
-    const doc = new jsPDF();
+    //consulta para obtener el total de expedientes
+    db.query(countQuery, [estado], (countErr, countResults) => {
+      if (countErr) {
+        console.error("Error al contar los expedientes:", countErr);
+        return res
+          .status(500)
+          .json({ error: "Error al contar los expedientes." });
+      }
 
-    // Agregar la imagen al PDF
-    const imagePath = path.join(__dirname, "public/images/Bufete-popular.png"); // Ruta de la imagen
-    const imgData = fs.readFileSync(imagePath).toString("base64"); // Leer la imagen en base64
-    doc.addImage(imgData, "PNG", 10, 10, 40, 25); // Ajusta las coordenadas y el tamaño según sea necesario
+      const totalExpedientes = countResults[0].totalExpedientes;
 
-    // Título del reporte
-    const title = `Reporte de Expedientes ${
-      estado.charAt(0).toUpperCase() + estado.slice(1)
-    }`;
-    const titleWidth =
-      (doc.getStringUnitWidth(title) * doc.internal.getFontSize()) /
-      doc.internal.scaleFactor;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const x = (pageWidth - titleWidth) / 2; // Cálculo para centrar
+      // Crea el documento PDF usando jsPDF
+      const doc = new jsPDF();
 
-    doc.setFont("Arvo font", "bold");
-    doc.setFontSize(18);
-    doc.text(title, x, 30);
+      // Agregar la imagen al PDF
+      const imagePath = path.join(
+        __dirname,
+        "public/images/Bufete-popular.png"
+      ); // Ruta de la imagen
+      const imgData = fs.readFileSync(imagePath).toString("base64"); // Leer la imagen en base64
+      doc.addImage(imgData, "PNG", 10, 10, 40, 25);
 
-    // Preparar los datos para jsPDF AutoTable
-    const tableColumn = [
-      "Nombre del Expediente",
-      "FechaCreación",
-      "FechaCE",
-      "Descripción",
-    ];
-    const tableRows = [];
-
-    // Llena las filas con los resultados de la base de datos
-    results.forEach((expediente) => {
-      const expedienteData = [
-        expediente.Nombre_expediente,
-        expediente.Fecha_creación
-          ? new Date(expediente.Fecha_creación).toISOString().split("T")[0]
-          : "No disponible",
-        expediente.Fecha_cambioEstado
-          ? new Date(expediente.Fecha_cambioEstado).toISOString().split("T")[0]
-          : "No disponible",
-        expediente.Descripción,
-      ];
-      tableRows.push(expedienteData);
-    });
-
-    // Inserta la tabla en el PDF usando jsPDF-AutoTable
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 38, // Posición inicial de la tabla
-      theme: "grid", 
-      headStyles: { fillColor: [23, 31, 77], halign: "center" }, // Color del encabezado
-      margin: { top: 10 },
-    });
-
-    // Fecha y hora para el pie de página
-    const fechaActual = new Date().toLocaleDateString();
-    const horaActual = new Date().toLocaleTimeString();
-
-    // Pie de página con fuente pequeña
-    doc.setFontSize(10); // Tamaño de fuente reducido
-
-    // Usuario alineado a la izquierda
-    doc.text(
-      `Generado por: ${usuario}`,
-      10,
-      doc.internal.pageSize.getHeight() - 10
-    );
-
-    // Fecha y hora alineados a la derecha
-    const textoDerecha = `Fecha: ${fechaActual} | Hora: ${horaActual}`;
-    const textWidth =
-      (doc.getStringUnitWidth(textoDerecha) * doc.internal.getFontSize()) /
-      doc.internal.scaleFactor;
-
-    // Texto alineado a la derecha
-    doc.text(
-      textoDerecha,
-      pageWidth - textWidth - 10,
-      doc.internal.pageSize.getHeight() - 10
-    );
-    // Establecer los encabezados HTTP para visualizar el archivo en lugar de descargarlo
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `inline; filename="Reporte_Expedientes_${
+      // Título del reporte
+      const title = `Reporte de Expedientes ${
         estado.charAt(0).toUpperCase() + estado.slice(1)
-      }.pdf"`
-    );
+      }`;
+      const titleWidth =
+        (doc.getStringUnitWidth(title) * doc.internal.getFontSize()) /
+        doc.internal.scaleFactor;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const x = (pageWidth - titleWidth) / 2; // Cálculo para centrar
 
-    // Enviar el PDF como respuesta
-    const pdfOutput = doc.output("arraybuffer");
-    res.send(Buffer.from(pdfOutput));
+      doc.setFont("Arvo font", "bold");
+      doc.setFontSize(18);
+      doc.text(title, x, 30);
+
+      // Preparar los datos para jsPDF AutoTable
+      const tableColumn = [
+        "Nombre del Expediente",
+        "FechaCreación",
+        "FechaCE",
+        "Descripción",
+      ];
+      const tableRows = [];
+
+      // Llena las filas con los resultados de la base de datos
+      results.forEach((expediente) => {
+        const expedienteData = [
+          expediente.Nombre_expediente,
+          expediente.Fecha_creación
+            ? new Date(expediente.Fecha_creación).toISOString().split("T")[0]
+            : "No disponible",
+          expediente.Fecha_cambioEstado
+            ? new Date(expediente.Fecha_cambioEstado)
+                .toISOString()
+                .split("T")[0]
+            : "No disponible",
+          expediente.Descripción,
+        ];
+        tableRows.push(expedienteData);
+      });
+
+      // Inserta la tabla en el PDF usando jsPDF-AutoTable
+      doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 38, // Posición inicial de la tabla
+        theme: "grid",
+        headStyles: { fillColor: [23, 31, 77], halign: "center" }, // Color del encabezado
+        margin: { top: 10 },
+      });
+
+      // Fecha y hora para el pie de página
+      const fechaActual = new Date().toLocaleDateString();
+      const horaActual = new Date().toLocaleTimeString();
+
+      // Pie de página con fuente pequeña
+      doc.setFontSize(10);
+
+      // Mostrar la cantidad de expedientes
+      doc.text(
+        `Total de Expedientes: ${totalExpedientes}`,
+        pageWidth / 2,
+        doc.internal.pageSize.getHeight() - 20,
+        { align: "center" }
+      );
+
+      // Usuario alineado a la izquierda
+      doc.text(
+        `Generado por: ${usuario}`,
+        10,
+        doc.internal.pageSize.getHeight() - 10
+      );
+
+      // Fecha y hora alineados a la derecha
+      const textoDerecha = `Fecha: ${fechaActual} | Hora: ${horaActual}`;
+      const textWidth =
+        (doc.getStringUnitWidth(textoDerecha) * doc.internal.getFontSize()) /
+        doc.internal.scaleFactor;
+
+      // Texto alineado a la derecha
+      doc.text(
+        textoDerecha,
+        pageWidth - textWidth - 10,
+        doc.internal.pageSize.getHeight() - 10
+      );
+      // Establecer los encabezados HTTP para visualizar el archivo en lugar de descargarlo
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `inline; filename="Reporte_Expedientes_${
+          estado.charAt(0).toUpperCase() + estado.slice(1)
+        }.pdf"`
+      );
+
+      // Enviar el PDF como respuesta
+      const pdfOutput = doc.output("arraybuffer");
+      res.send(Buffer.from(pdfOutput));
+    });
   });
 });
 

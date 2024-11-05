@@ -25,7 +25,6 @@ import {
 import {
   Visibility,
   CompareArrows,
-  Scanner,
   Search,
   FileUpload,
 } from "@mui/icons-material";
@@ -108,8 +107,17 @@ const ActivosPage = () => {
       // Selección del directorio
       const directoryHandle = await window.showDirectoryPicker();
 
-      let pathRelativo = `${directoryHandle.name}/${newFolderName}`;
+      // Verifica si el directorio seleccionado es "/app/Expedientes/ACTIVOS"
+      if (directoryHandle.name !== "ACTIVOS") {
+        await Swal.fire({
+          icon: "error",
+          title: "Dirección incorrecta",
+          text: "Debe seleccionar la carpeta 'ACTIVOS'.",
+        });
+        return;
+      }
 
+      let pathRelativo = `${directoryHandle.name}/${newFolderName}`;
       let path = `/app/Expedientes/${pathRelativo}`;
 
       // Verificar si la carpeta ya existe en el sistema de archivos
@@ -311,28 +319,6 @@ const ActivosPage = () => {
     setOpenCambiarEstado(true);
   };
 
-  // Función para escanear archivos
-  const handleScan = async () => {
-    try {
-      // Hacer una solicitud GET a la API para abrir NAPS2
-      const response = await axios.get("http://localhost:3000/abrir-naps2");
-      alert(response.data.message);  // Mostrar un mensaje cuando NAPS2 se abra
-    } catch (error) {
-      //alert("Hubo un error al intentar abrir NAPS2.");
-      Swal.fire({ 
-        icon: "error",
-        title: "Error",
-        text: "Hubo un error al intentar abrir NAPS2.",
-        confirmButtonText: "OK",
-      });
-      console.error(error);
-    }
-  };
-
-  const Escanear = () => {
-    handleScan(); // Llama a la función handleScan cuando sea necesario
-  };
-
   const handleImportarArchivos = async (folder) => {
     try {
       const fileInput = document.createElement("input");
@@ -427,18 +413,16 @@ const ActivosPage = () => {
       name: "Expediente",
       selector: (row) => row.Nombre_expediente,
       sortable: true,
-      minWidth: "250px",
+      minWidth: "300px",
     },
     {
       name: "Fecha",
       selector: (row) => {
         // new Date(row.Fecha_creación).toISOString().split("T")[0],
         // Si el expediente fue movido a "Activo" desde otro estado, muestra la fecha de cambio
-        if (row.Fecha_cambioEstado) {
-          return new Date(row.Fecha_cambioEstado).toISOString().split("T")[0];
-        }
-        // Si no, muestra la fecha de creación
-        return new Date(row.Fecha_creación).toISOString().split("T")[0];
+        const fecha = row.Fecha_cambioEstado || row.Fecha_creación;
+        const localDate = new Date(fecha);
+        return localDate.toLocaleDateString("en-CA");
       },
       sortable: true,
       width: "150px",
@@ -447,7 +431,7 @@ const ActivosPage = () => {
       name: "Descripción",
       selector: (row) => row.Descripción || "Sin descripción",
       sortable: true,
-      minWidth: "250px",
+      minWidth: "150px",
     },
     {
       name: "Acciones",
@@ -465,9 +449,7 @@ const ActivosPage = () => {
           >
             <CompareArrows />
           </IconButton>
-          <IconButton onClick={Escanear} sx={{ color: "#171F4D" }}>
-            <Scanner />
-          </IconButton>
+
           <IconButton
             onClick={() => handleImportarArchivos(row)}
             sx={{ color: "#171F4D" }}
@@ -476,7 +458,7 @@ const ActivosPage = () => {
           </IconButton>
         </ButtonGroup>
       ),
-      width: "200px",
+      width: "150px",
     },
   ];
 
@@ -562,18 +544,19 @@ const ActivosPage = () => {
             sx={{
               alignSelf: "flex-end",
               marginBottom: 2,
-              backgroundColor: "#171F4D",
+              backgroundColor: "#DC5F00",
               fontWeight: "bold",
               fontSize: "12px",
               padding: "6px 12px",
               "&:hover": {
-                backgroundColor: "#0f1436",
+                backgroundColor: "#FFED38",
               },
             }}
           >
             Nuevo
           </Button>
           <Box
+            //className="data-table-container" 
             sx={{
               width: "100%",
               height: "50vh",
@@ -592,11 +575,12 @@ const ActivosPage = () => {
                 table: {
                   style: {
                     height: "500px", // Altura fija para la tabla completa
+                    width: "100%", // Ancho completo de la tabla
                   },
                 },
                 headCells: {
                   style: {
-                    fontSize: "16px", // Tamaño de la fuente del encabezado
+                    fontSize: "22px", // Tamaño de la fuente del encabezado
                     fontWeight: "bold", // Negrita en el encabezado
                     backgroundColor: "#d3d3d3", // Color de fondo del encabezado
                     borderBottom: "2px solid #e0e0e0", // Línea en la parte inferior del encabezado
@@ -605,13 +589,13 @@ const ActivosPage = () => {
                 },
                 cells: {
                   style: {
-                    fontSize: "14px", // Tamaño de la fuente de las celdas
+                    fontSize: "19px", // Tamaño de la fuente de las celdas
                   },
                 },
                 pagination: {
                   style: {
                     backgroundColor: "#e8e8e8", // Color gris para la paginación
-                    fontSize: "15px", // Tamaño de la fuente de la paginación (puedes ajustar esto)
+                    fontSize: "15px", // Tamaño de la fuente de la paginación 
                     height: "5px",
                   },
                 },
@@ -635,9 +619,11 @@ const ActivosPage = () => {
             marginTop: 8,
             fontSize: "12px",
             padding: "6px 12px",
-            backgroundColor: "#171F4D",
+            backgroundColor: "#DC5F00",
             "&:hover": {
-              backgroundColor: "#0f1436",
+              backgroundColor: "#FFED38",
+              // backgroundColor: "#3F9BBF" #4A646C,
+
             },
           }}
         >

@@ -4,22 +4,23 @@ CREATE TABLE IF NOT EXISTS  USUARIO (
     Id_usuario INT AUTO_INCREMENT PRIMARY KEY,
     Nombres VARCHAR(25) NOT NULL,
     Apellidos VARCHAR(25) NOT NULL,
-    Telefono  CHAR(8) NOT NULL,
+    Telefono  CHAR(10) NOT NULL,
     Email VARCHAR(25) NOT NULL,
     Fecha_nacimiento DATE NOT NULL,
     Edad INT,
-    Direccion VARCHAR(25) NOT NULL,
+    Direccion VARCHAR(45) NOT NULL,
     Rol VARCHAR(25) NOT NULL, 
     NombreUsuario VARCHAR(25) UNIQUE NOT NULL,
-    Contraseña VARCHAR(255) NOT NULL
+    Contraseña VARCHAR(255) NOT NULL,
+    SessionToken VARCHAR(255) DEFAULT NULL
     );
     -- ROL 1: SECRETARIA  -- ROL 2: PRACTICANTE
 
 CREATE TABLE IF NOT EXISTS CARPETA (
     Id_carpeta INT AUTO_INCREMENT PRIMARY KEY,
-    Nombre_expediente VARCHAR(40) NOT NULL,
+    Nombre_expediente VARCHAR(60) NOT NULL,
     Fecha_creación TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    Descripción VARCHAR(40),
+    Descripción VARCHAR(60),
     RutaExpediente VARCHAR(255) UNIQUE NOT NULL
       );
  

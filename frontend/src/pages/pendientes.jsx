@@ -213,7 +213,7 @@ const PendientesPage = () => {
       name: "Expediente",
       selector: (row) => row.Nombre_expediente,
       sortable: true,
-      minWidth: "250px",
+      minWidth: "300px",
     },
     {
       name: "Fecha",
@@ -231,7 +231,7 @@ const PendientesPage = () => {
       name: "Descripción",
       selector: (row) => row.Descripción,
       sortable: true,
-      minWidth: "250px",
+      minWidth: "150px",
     },
     {
       name: "Acciones",
@@ -251,7 +251,7 @@ const PendientesPage = () => {
           </IconButton>
         </ButtonGroup>
       ),
-      width: "200px",
+      width: "150px",
     },
   ];
 
@@ -354,7 +354,7 @@ const PendientesPage = () => {
                 },
                 headCells: {
                   style: {
-                    fontSize: "16px", // Tamaño de la fuente del encabezado
+                    fontSize: "22px", // Tamaño de la fuente del encabezado
                     fontWeight: "bold", // Negrita en el encabezado
                     backgroundColor: "#d3d3d3", // Color de fondo del encabezado
                     borderBottom: "2px solid #e0e0e0", // Línea en la parte inferior del encabezado
@@ -363,13 +363,13 @@ const PendientesPage = () => {
                 },
                 cells: {
                   style: {
-                    fontSize: "14px", // Tamaño de la fuente de las celdas
+                    fontSize: "19px", // Tamaño de la fuente de las celdas
                   },
                 },
                 pagination: {
                   style: {
                     backgroundColor: "#e8e8e8", // Color gris para la paginación
-                    fontSize: "15px", // Tamaño de la fuente de la paginación (puedes ajustar esto)
+                    fontSize: "15px", // Tamaño de la fuente de la paginación 
                     height: "5px",
                   },
                 },
@@ -390,9 +390,9 @@ const PendientesPage = () => {
             marginTop: 8,
             fontSize: "12px",
             padding: "6px 12px",
-            backgroundColor: "#171F4D",
+            backgroundColor: "#DC5F00",
             "&:hover": {
-              backgroundColor: "#0f1436", 
+              backgroundColor: "#FFED38", 
             },
           }}
         >

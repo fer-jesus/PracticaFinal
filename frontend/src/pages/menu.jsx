@@ -13,13 +13,16 @@ const MenuPage = () => {
 
   return (
     <div className="menu-container">
-      <Container component="main" maxWidth="xs">
+      <Container component="main" maxWidth="md">
         <Box
           sx={{
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
+            padding: { xs: "16px", sm: "24px", md: "32px" },
+            minHeight: "100vh",
+            maxWidth: "100vw",
           }}
         >
           <img src={eduSuperior} alt="Logo Bufete" className="edu-superior" />
@@ -33,8 +36,8 @@ const MenuPage = () => {
               margin: 4,
               backgroundColor: "#ff0000",
               fontWeight: "bold",
-              fontSize: "12px",
-              padding: "6px 12px",
+              fontSize: "16px",
+              padding: "10px 20px",
               "&:hover": {
                 backgroundColor: "#cc0000",
               },

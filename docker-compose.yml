@@ -28,7 +28,8 @@ services:
       - ./backend:/app
       - /app/node_modules
       - ./basededatos:/basededatos 
-      - "E:/Expedientes:/app/Expedientes" # ruta de los expedientes
+      #- "E:/Expedientes:/app/Expedientes" # ruta de los expedientes
+      - "C:/Users/JFGL/Desktop/Expedientes:/app/Expedientes"
     # env_file:
     #   - ./backend/.env
     environment:
@@ -61,17 +62,6 @@ services:
       - app-network
     depends_on: 
       - backend
-
-  # naps2-service:
-  #   build:
-  #     context: ./naps2-service
-  #     dockerfile: Dockerfile
-  #   ports:
-  #   - "3001:3001"  # Mapear el puerto 3001 del contenedor al 3001 del host
-  #   volumes:
-  #   - "/C/Program Files/NAPS2:/app/NAPS2"  # Mapea la ruta local de NAPS2.exe
-  #   networks:
-  #   - app-network
 
 networks:
   app-network:

@@ -17,17 +17,19 @@ img {
   max-width: 100%;
   height: auto;
 }
-
+ 
 .menu-container {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  height: 100vh;
+  min-height: 100vh;
   width: 100vw;
-  background: linear-gradient(135deg, #297A72  0%, #63B4AC 75%); 
+  overflow: hidden;
+  /* background: linear-gradient(135deg, #297A72  0%, #63B4AC 75%);  */
+  background: #355d75;
 }
 
-button {
+Button {
   background-color: #171F4D;
 }
 

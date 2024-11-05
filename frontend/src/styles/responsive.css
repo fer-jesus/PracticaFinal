@@ -1,129 +1,295 @@
-body, html {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* Para pantallas pequeñas, como teléfonos (menos de 600px) */
+@media (max-width: 600px) {
 
-/* General container adjustments for mobile */
-.container {
-    padding: 1rem;
-    max-width: 100%;
-}
-
-/* Styles for small screens (e.g., mobile) */
-@media (max-width: 768px) {
-    /* Ajustes de contenedores principales */
-    .page-container {
-        padding: 1rem;
-        margin: 0 auto;
-    }
-
-    /* Ajustes de DataTable */
-    .rdt_Table {
-        font-size: 0.8rem;
-        padding: 0.5rem;
-    }
-
-    /* Ajustes de botones */
-    .button {
-        width: 100%;
-        padding: 8px;
-        font-size: 0.9rem;
-        margin-bottom: 0.5rem;
-    }
-
-    /* Campo de búsqueda */
-    .search-field {
-        width: 100%;
-        margin-bottom: 1rem;
-    }
-
-    /* Ajustes de layout para pantallas pequeñas */
-    .header, .footer {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
-    .menu-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    /* Ajustes de tabla */
-    .table-container {
-        overflow-x: auto;
-    }
-}
-
-/* Styles for medium screens (e.g., tablets) */
-@media (min-width: 768px) and (max-width: 1200px) {
-    /* Ajustes de contenedores */
-    .page-container {
-        max-width: 90%;
-        margin: 0 auto;
-        padding: 1.5rem;
-    }
-
-    /* Ajustes de DataTable */
-    .rdt_Table {
-        font-size: 0.9rem;
-    }
-
-    /* Ajustes de botones */
-    .button {
-        width: auto;
+    /* Estilos login */
+    .login-container {
         padding: 10px;
-        font-size: 1rem;
+        display: flex;
+        justify-content: center;
     }
 
-    /* Campo de búsqueda */
-    .search-field {
+    .logo-bufete {
+        width: 200px;
+        margin-bottom: 15px;
+    }
+
+    .MuiContainer-root {
+        width: 100%;
+    }
+
+    .MuiPaper-root {
+        padding: 10px;
+    }
+
+    .MuiTypography-h5 {
+        font-size: 1.2rem;
+    }
+
+    .MuiButton-root {
+        font-size: 0.9rem;
+        padding: 10px 20px;
+        width: 100%;
+    }
+
+    .MuiTextField-root {
+        width: 100%;
+    }
+
+    /* Estilos menu */
+    .menu-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        height: 100vh;
+    }
+
+    .edu-superior {
         width: 80%;
-        margin: 1rem 0;
+        margin: 20px 0;
     }
 
-    /* Disposición en dos columnas para botones */
-    .menu-buttons {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.5rem;
+    .state-buttons-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        align-items: center;
+    }
+
+    button {
+        font-size: 0.8rem;
+        padding: 8px 16px;
+        width: 100%;
+        max-width: 300px;
     }
 }
 
-/* Styles for large screens (e.g., desktop) */
-@media (min-width: 1200px) {
-    /* Ajustes de contenedores */
-    .page-container {
-        max-width: 75%;
-        margin: 0 auto;
-        padding: 2rem;
+/* Para pantallas medianas, como tablets (600px - 1024px) */
+@media (min-width: 601px) and (max-width: 1024px) {
+
+    /* Estilos login */
+    .login-container {
+        padding: 20px;
     }
 
-    /* Ajustes de DataTable */
-    .rdt_Table {
+    .logo-bufete {
+        width: 200px;
+        margin-bottom: 20px;
+    }
+
+    .MuiContainer-root {
+        width: 80%;
+    }
+
+    .MuiPaper-root {
+        padding: 20px;
+    }
+
+    .MuiButton-root {
         font-size: 1rem;
-        padding: 1rem;
+        padding: 12px 24px;
     }
 
-    /* Ajustes de botones */
-    .button {
-        width: auto;
-        padding: 12px;
-        font-size: 1.1rem;
-    }
-
-    /* Campo de búsqueda */
-    .search-field {
-        width: 60%;
-    }
-
-    /* Disposición de los botones en una fila */
-    .menu-buttons {
+    /* Estilos menu */
+    .menu-container {
+        padding: 20px;
         display: flex;
-        flex-direction: row;
-        gap: 1rem;
+        justify-content: flex-start;
+        align-items: center;
+        flex-direction: column;
+        min-height: 50vh;
+        margin-top: -10px;
+    }
+
+    .edu-superior {
+        width: 300px;
+        margin: 10px auto 5px auto;
+    }
+
+    .state-buttons-container {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 5px;
+    }
+
+    button {
+        font-size: 1rem;
+        padding: 12px 24px;
+
+    }
+}
+
+/* Para pantallas grandes, como computadoras de escritorio (más de 1024px) */
+@media (min-width: 1025px) {
+
+    /* Estilos login */
+    .login-container {
+        padding: 40px;
+    }
+
+    .logo-bufete {
+        width: 450px;
+        margin-bottom: 10px;
+    }
+
+    .MuiContainer-root {
+        width: 400px;
+    }
+
+    .MuiPaper-root {
+        padding: 30px;
+    }
+
+    .MuiButton-root {
+        font-size: 1.2rem;
+        padding: 16px 32px;
+    }
+
+    /* Estilos menu */
+    .menu-container {
+        padding: 40px;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        flex-direction: column;
+        min-height: 70vh;
+        margin-top: -50px;
+    }
+
+    .edu-superior {
+        width: 500px;
+        margin: 20px auto 15px auto;
+    }
+
+    .state-buttons-container {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 15px;
+    }
+
+    button {
+        font-size: 1.2rem;
+        padding: 16px 32px;
+    }
+
+    /* Estilos para las 3 pages */
+    button {
+        font-size: 1.5rem;
+        padding: 40px 50px;
+    }
+
+    /* Estilos activos */
+    .activo-container {
+        padding: 40px;
+    }
+
+    .activo-container .MuiContainer-root {
+        width: 100%;
+    }
+
+    .activo-container .MuiButton-root {
+        font-size: 1rem;
+        padding: 10px 20px;
+    }
+
+    .activo-container .search-field {
+        width: 350px;
+    }
+
+    .activo-container .MuiTypography-h4 {
+        font-size: 2rem;
+    }
+
+    /* Botón "Nuevo" solo en la página Activos */
+    .activo-container .nuevo-button {
+        font-size: 1rem;
+        padding: 10px 20px;
+        align-self: flex-end;
+        margin-bottom: 2rem;
+        /* Para espaciar el botón */
+    }
+
+    /* Estilos pendientes */
+    .pendientes-container {
+        padding: 40px;
+    }
+
+    .pendientes-container .MuiContainer-root {
+        width: 100%;
+    }
+
+    .pendientes-container .MuiButton-root {
+        font-size: 1rem;
+        padding: 10px 20px;
+    }
+
+    .pendientes-container .search-field {
+        width: 350px;
+    }
+
+    .pendientes-container .MuiTypography-h4 {
+        font-size: 2rem;
+    }
+
+    /* Estilos finalizados */
+    .finalizados-container {
+        padding: 40px;
+    }
+
+    .finalizados-container .MuiContainer-root {
+        width: 100%;
+    }
+
+    .finalizados-container .MuiButton-root {
+        font-size: 1rem;
+        padding: 10px 20px;
+    }
+
+    .finalizados-container .search-field {
+        width: 350px;
+    }
+
+    .finalizados-container .MuiTypography-h4 {
+        font-size: 2rem;
+    }
+
+    /* Estilos comunes para DataTable */
+    .data-table-container {
+        width: 100%;
+        height: auto;
+        max-height: 100vh;
+        overflow: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        font-size: 25px;
+    }
+
+    .data-table th {
+        font-size: 30px;
+        /* Aumentar el tamaño de fuente de los encabezados */
+        font-weight: bold;
+        /* Negrita para los encabezados */
+        padding: 15px;
+        /* Ajustar padding si es necesario */
+        /* background-color: #d3d3d3; Color de fondo para mayor claridad */
+    }
+
+    /* Estilos para las celdas del DataTable */
+    .data-table td {
+        font-size: 30px;
+        /* Aumentar el tamaño de fuente para las celdas */
+        padding: 15px;
+        /* Ajustar padding si es necesario */
+    }
+
+    /* Títulos */
+    .MuiTypography-h4 {
+        font-size: 8rem;
     }
 }
