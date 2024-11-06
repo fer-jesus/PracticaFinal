@@ -15,7 +15,6 @@ import {
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-//import ReCAPTCHA from "react-google-recaptcha";
 import Swal from "sweetalert2";
 import "../styles/register.css";
 

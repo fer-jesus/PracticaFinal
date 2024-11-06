@@ -19,12 +19,14 @@ import {
   TextField,
   InputAdornment,
   MenuItem,
+  Menu,
   Select,
 } from "@mui/material";
 import { Visibility, CompareArrows, Search } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
+import AccountCircle from "@mui/icons-material/AccountCircle";
 import StateButtons from "../components/StateButtons";
 import axios from "axios";
 import "../styles/estados.css";
@@ -39,6 +41,8 @@ const PendientesPage = () => {
   const [openCambiarEstado, setOpenCambiarEstado] = useState(false);
   const [nuevoEstado, setNuevoEstado] = useState("");
   const [folderToChange, setFolderToChange] = useState(null);
+  const [nombreCompleto, setNombreCompleto] = useState("");
+  const [anchorEl, setAnchorEl] = useState(null);
 
   // Función para obtener las carpetas de la base de datos
   const fetchFolders = async () => {
@@ -58,8 +62,26 @@ const PendientesPage = () => {
   };
   // Llama a fetchFolders cuando el componente se monte
   useEffect(() => {
+    const nombres = localStorage.getItem("nombres");
+    const apellidos = localStorage.getItem("apellidos");
+    if (nombres && apellidos) {
+      setNombreCompleto(`${nombres} ${apellidos}`);
+    }
     fetchFolders();
   }, []);
+
+  // Función para manejar la apertura del menú
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  // Función para cerrar el menú
+  const handleCloseMenu = () => {
+    localStorage.removeItem("nombreUsuario");
+    localStorage.removeItem("nombres");
+    localStorage.removeItem("apellidos");
+    setAnchorEl(null);
+  };
 
   const handleLogout = () => {
     //limpiar cualquier dato almacenado en localStorage o en el estado global
@@ -257,7 +279,7 @@ const PendientesPage = () => {
 
   return (
     <div className="pendientes-container">
-      <Container sx={{ paddingTop: 4, height: "100vh", overflowY: "auto" }}>
+      <Container sx={{ paddingTop: 4, height: "100vh" }}>
         <Box
           sx={{
             display: "flex",
@@ -266,7 +288,33 @@ const PendientesPage = () => {
             alignItems: "center",
           }}
         >
-          <Button
+          {/* Mostrar el nombre completo con el ícono de usuario */}
+          <Box sx={{ position: "absolute", top: 16, right: 16, display: "flex", alignItems: "center" }}>
+            <Typography variant="h6" sx={{ fontWeight: "bold", marginRight: 1 }}>
+              {nombreCompleto}
+            </Typography>
+            <IconButton onClick={handleMenu} color="inherit">
+              <AccountCircle fontSize="large" />
+            </IconButton>
+          </Box>
+
+          {/* Menu desplegable */}
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleCloseMenu}
+            anchorOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+          >
+            <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
+          </Menu>
+          {/* <Button
             variant="contained"
             onClick={handleLogout}
             sx={{
@@ -284,19 +332,16 @@ const PendientesPage = () => {
             }}
           >
             Cerrar Sesión
-          </Button>
+          </Button> */}
           <Box
             sx={{
               width: "100%",
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: "flex-start",
               alignItems: "center",
               marginBottom: 2,
             }}
           >
-            <Typography variant="h4" sx={{ marginBottom: 2 }}>
-              {/* Pendientes */}
-            </Typography>
             <TextField
               label="Buscar Expediente"
               variant="outlined"

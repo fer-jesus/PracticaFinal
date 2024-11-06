@@ -16,6 +16,7 @@ import {
   InputAdornment,
   Dialog,
   MenuItem,
+  Menu,
   Select,
   DialogTitle,
   DialogContent,
@@ -25,6 +26,7 @@ import {
 import { Visibility,  CompareArrows, Delete, Search } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
+import AccountCircle from "@mui/icons-material/AccountCircle";
 import Swal from "sweetalert2";
 import StateButtons from "../components/StateButtons";
 import axios from "axios";
@@ -42,6 +44,8 @@ const FinalizadosPage = () => {
   const [folderToChange, setFolderToChange] = useState(null);
   const [openEliminar, setOpenEliminar] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState(null);
+  const [nombreCompleto, setNombreCompleto] = useState("");
+  const [anchorEl, setAnchorEl] = useState(null);
 
  
     const fetchFolders = async () => {
@@ -62,9 +66,28 @@ const FinalizadosPage = () => {
         }
       }
     };
+
     useEffect(() => {
+      const nombres = localStorage.getItem("nombres");
+      const apellidos = localStorage.getItem("apellidos");
+      if (nombres && apellidos) {
+        setNombreCompleto(`${nombres} ${apellidos}`);
+      }
     fetchFolders();
   }, []); // Se ejecuta cuando el componente se monta
+
+  // Función para manejar la apertura del menú
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  // Función para cerrar el menú
+  const handleCloseMenu = () => {
+    localStorage.removeItem("nombreUsuario");
+    localStorage.removeItem("nombres");
+    localStorage.removeItem("apellidos");
+    setAnchorEl(null);
+  };
 
   const handleLogout = () => {
     // limpiar cualquier dato almacenado en localStorage o en el estado global
@@ -306,7 +329,7 @@ const FinalizadosPage = () => {
 
   return (
     <div className="finalizados-container">
-      <Container sx={{ paddingTop: 4, height: "100vh", overflowY: "auto" }}>
+      <Container sx={{ paddingTop: 4, height: "100vh" }}>
         <Box
           sx={{
             display: "flex",
@@ -315,7 +338,33 @@ const FinalizadosPage = () => {
             alignItems: "center",
           }}
         >
-          <Button
+            {/* Mostrar el nombre completo con el ícono de usuario */}
+            <Box sx={{ position: "absolute", top: 16, right: 16, display: "flex", alignItems: "center" }}>
+            <Typography variant="h6" sx={{ fontWeight: "bold", marginRight: 1 }}>
+              {nombreCompleto}
+            </Typography>
+            <IconButton onClick={handleMenu} color="inherit">
+              <AccountCircle fontSize="large" />
+            </IconButton>
+          </Box>
+
+          {/* Menu desplegable */}
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleCloseMenu}
+            anchorOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+          >
+            <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
+          </Menu>
+          {/* <Button
             variant="contained"
             onClick={handleLogout}
             sx={{
@@ -333,19 +382,16 @@ const FinalizadosPage = () => {
             }}
           >
             Cerrar Sesión
-          </Button>
+          </Button> */}
           <Box
             sx={{
               width: "100%",
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: "flex-start",
               alignItems: "center",
               marginBottom: 2,
             }}
           >
-            <Typography variant="h4" sx={{ marginBottom: 2 }}>
-              {/* Finalizados */}
-            </Typography>
             <TextField
               label="Buscar Expediente"
               variant="outlined"
@@ -382,7 +428,6 @@ const FinalizadosPage = () => {
             sx={{
               width: "100%",
               height: "50vh",
-              //overflowY: "auto",
               marginTop: 8,
             }}
           >
@@ -398,6 +443,7 @@ const FinalizadosPage = () => {
                 table: {
                   style: {
                     height: "500px", // Altura fija para la tabla completa
+                    width: "100%",
                   },
                 },
                 headCells: {

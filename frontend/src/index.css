@@ -9,6 +9,7 @@ html, body, #root {
   width: 100%;
   height: 100%;
   overflow: hidden; /* Evita el scroll */
+  overflow-y: auto;
 }
 
 /* Ajuste para evitar espacios en blanco no deseados */

@@ -1,39 +1,55 @@
-.activo-container {
+.page-container {
+    min-height: 100vh; /* Asegura que ocupe toda la altura */
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    width: 100vw;
-    /* background: #297A72; */
-    /* background: linear-gradient(135deg, #297A72  0%, #63B4AC 75%);  */
-    background: #355d75 ;
-    background-size: cover;
+    flex-direction: column; /* Permite que los elementos internos se apilen verticalmente */
+    overflow: hidden; /* Evita que se agregue scroll innecesario */
 }
 
-.pendientes-container {
+/* Para las tres secciones: Activos, Pendientes, Finalizados */
+.activo-container, .pendientes-container, .finalizados-container {
     display: flex;
     justify-content: center;
-    align-items: center;
-    height: 100vh;
-    width: 100vw;
-    /* background: #297A72; */
-    /* background: linear-gradient(135deg, #297A72  0%, #63B4AC 75%);  */
-    background: #355d75 ;
-    background-size: cover;
-}
-
-.finalizados-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    width: 100vw;
-    /* background: #297A72; */
-    /* background: linear-gradient(135deg, #297A72  0%, #63B4AC 75%);  */
-    background: #355d75 ;
+    align-items: flex-start; /* Ajusta la alineación vertical si es necesario */
+    flex-grow: 1; /* Permite que el contenedor crezca para ocupar el espacio disponible */
+    width: 100%; /* Asegura que ocupe toda la anchura */
+    padding: 20px; /* Añade un poco de espacio interno */
+    box-sizing: border-box;
+    background: #355d75;
     background-size: cover;
 }
 
 .swal2-container {
     z-index: 2100 !important; /* Establecer un z-index mayor al del Dialog */
   }
+
+  /* Opcional: si quieres agregar un poco de margen para evitar que los contenidos toquen los bordes de la ventana */
+.container-content {
+    width: 100%;
+    max-width: 1200px; /* O lo que necesites */
+    margin: 0 auto;
+}
+
+/* Si tienes un contenedor específico para los elementos dentro de estas secciones */
+.element-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Espacio entre los elementos */
+    width: 100%;
+}
+
+/* Para evitar distorsión en el header (nombre completo y buscador) */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 10px;
+}
+
+.header .user-info {
+    margin-right: 20px; /* Añade espacio a la derecha si es necesario */
+}
+
+.header .search-bar {
+    flex-grow: 1; /* Para que el buscador ocupe todo el espacio disponible */
+}

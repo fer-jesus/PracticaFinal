@@ -4,8 +4,6 @@ services:
   db:
     image: mysql:5.7
     container_name: mysql-db
-    # env_file:
-    #   - ./backend/.env
     environment:
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_DATABASE: expedientesBP
@@ -30,10 +28,7 @@ services:
       - ./basededatos:/basededatos 
       #- "E:/Expedientes:/app/Expedientes" # ruta de los expedientes
       - "C:/Users/JFGL/Desktop/Expedientes:/app/Expedientes"
-    # env_file:
-    #   - ./backend/.env
     environment:
-       #- NODE_ENV=${NODE_ENV}
        - PORT=3000
        - DB_HOST=db
        - DB_PASSWORD=123456

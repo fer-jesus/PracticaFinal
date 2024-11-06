@@ -1,14 +1,37 @@
-import { Container, Box, Button } from "@mui/material";
+import { Container, Box, Typography, IconButton, Menu, MenuItem } from "@mui/material";
+import AccountCircle from "@mui/icons-material/AccountCircle";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import StateButtons from "../components/StateButtons";
 import "../styles/menu.css";
 import eduSuperior from "../assets/EduSuperior.png";
 
 const MenuPage = () => {
   const navigate = useNavigate();
+  const [nombreCompleto, setNombreCompleto] = useState("");
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  useEffect(() => {
+    // Recupera el nombre de usuario de localStorage
+    const nombres = localStorage.getItem("nombres");
+    const apellidos = localStorage.getItem("apellidos");
+    if (nombres && apellidos) {
+      setNombreCompleto(`${nombres} ${apellidos}`);
+    }
+  }, []);
 
   const handleLogout = () => {
+    localStorage.removeItem("nombres");
+    localStorage.removeItem("apellidos");
     navigate("/login"); // Redirige a la página de login
+  };
+
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
   };
 
   return (
@@ -26,25 +49,32 @@ const MenuPage = () => {
           }}
         >
           <img src={eduSuperior} alt="Logo Bufete" className="edu-superior" />
-          <Button
-            variant="contained"
-            onClick={handleLogout}
-            sx={{
-              position: "absolute",
-              top: 0,
-              left: 45,
-              margin: 4,
-              backgroundColor: "#ff0000",
-              fontWeight: "bold",
-              fontSize: "16px",
-              padding: "10px 20px",
-              "&:hover": {
-                backgroundColor: "#cc0000",
-              },
+          
+          <Box sx={{ position: "absolute", top: 16, right: 16, display: "flex", alignItems: "center" }}>
+            <Typography variant="h6" sx={{ fontWeight: "bold", marginRight: 1 }}>
+              {nombreCompleto}
+            </Typography>
+            <IconButton onClick={handleMenu} color="inherit">
+              <AccountCircle fontSize="large" />
+            </IconButton>
+          </Box>
+
+          {/* Menu desplegable */}
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+            anchorOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "right",
             }}
           >
-            Cerrar Sesión
-          </Button>
+            <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
+          </Menu>
 
           {/* <Typography variant="h3" sx={{ marginBottom: 2 }}>Elija el estado</Typography> */}
           <StateButtons
