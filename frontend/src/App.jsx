@@ -4,6 +4,7 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
+import { UserProvider } from "./components/UserContext";
 import LoginPage from "./pages/login";
 import RegisterPage from "./pages/register";
 import MenuPage from "./pages/menu";
@@ -15,6 +16,7 @@ import "./styles/responsive.css";
 
 const App = () => {
   return (
+    <UserProvider>
     <Router>
       <Routes>
         <Route path="/" element={<LoginPage />} /> 
@@ -27,6 +29,7 @@ const App = () => {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
+    </UserProvider>
   );
 };
 export default App;

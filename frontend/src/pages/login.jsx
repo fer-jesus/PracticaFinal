@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../styles/login.css";
@@ -19,6 +19,7 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import logoBufete from "../assets/Bufete-popular.png";
 import Swal from "sweetalert2";
+import { UserContext } from "../components/UserContext";
 //import logoUSAC from "../assets/Usac_logo.png";
 
 const LoginPage = () => {
@@ -29,6 +30,7 @@ const LoginPage = () => {
   const [errorPassword, setErrorPassword] = useState(false);
   const passwordRef = useRef(null);
   const navigate = useNavigate();
+  const { loginUser } = useContext(UserContext);
 
   const handleLogin = async () => {
     // Validar si el  usuario o contraseña con correctos
@@ -47,12 +49,9 @@ const LoginPage = () => {
       if (response.status === 200) {
         console.log("Login exitoso");
 
-        const { nombres, apellidos } = response.data; // Extraer los nombres y apellidos de la respuesta
-        // Almacena el nombre de usuario en localStorage o sessionStorage
-        localStorage.setItem("nombreUsuario", user);
-        localStorage.setItem("nombres", nombres);
-        localStorage.setItem("apellidos", apellidos);
-
+        const { nombres, apellidos } = response.data;
+        loginUser(nombres, apellidos); // Actualiza el contexto con el nombre del usuario
+        
         navigate("/menu");
       }
     } catch (error) {
