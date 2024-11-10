@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useContext, useState, useEffect } from "react";
 import {
   Container,
   Box,
@@ -27,6 +27,7 @@ import { useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
 import AccountCircle from "@mui/icons-material/AccountCircle";
+import { UserContext } from "../components/UserContext";
 import StateButtons from "../components/StateButtons";
 import axios from "axios";
 import "../styles/estados.css";
@@ -41,7 +42,7 @@ const PendientesPage = () => {
   const [openCambiarEstado, setOpenCambiarEstado] = useState(false);
   const [nuevoEstado, setNuevoEstado] = useState("");
   const [folderToChange, setFolderToChange] = useState(null);
-  const [nombreCompleto, setNombreCompleto] = useState("");
+  const {nombreCompleto } = useContext(UserContext);
   const [anchorEl, setAnchorEl] = useState(null);
 
   // Función para obtener las carpetas de la base de datos
@@ -62,11 +63,6 @@ const PendientesPage = () => {
   };
   // Llama a fetchFolders cuando el componente se monte
   useEffect(() => {
-    const nombres = localStorage.getItem("nombres");
-    const apellidos = localStorage.getItem("apellidos");
-    if (nombres && apellidos) {
-      setNombreCompleto(`${nombres} ${apellidos}`);
-    }
     fetchFolders();
   }, []);
 
@@ -77,9 +73,6 @@ const PendientesPage = () => {
 
   // Función para cerrar el menú
   const handleCloseMenu = () => {
-    localStorage.removeItem("nombreUsuario");
-    localStorage.removeItem("nombres");
-    localStorage.removeItem("apellidos");
     setAnchorEl(null);
   };
 
@@ -279,8 +272,8 @@ const PendientesPage = () => {
 
   return (
     <div className="pendientes-container">
-      <Container sx={{ paddingTop: 4, height: "100vh" }}>
-        <Box
+      <Container sx={{ paddingTop: "80px", height: "100vh" }}>
+      <Box
           sx={{
             display: "flex",
             flexDirection: "column",
@@ -288,60 +281,23 @@ const PendientesPage = () => {
             alignItems: "center",
           }}
         >
-          {/* Mostrar el nombre completo con el ícono de usuario */}
-          <Box sx={{ position: "absolute", top: 16, right: 16, display: "flex", alignItems: "center" }}>
-            <Typography variant="h6" sx={{ fontWeight: "bold", marginRight: 1 }}>
-              {nombreCompleto}
-            </Typography>
-            <IconButton onClick={handleMenu} color="inherit">
-              <AccountCircle fontSize="large" />
-            </IconButton>
-          </Box>
-
-          {/* Menu desplegable */}
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleCloseMenu}
-            anchorOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-          >
-            <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
-          </Menu>
-          {/* <Button
-            variant="contained"
-            onClick={handleLogout}
-            sx={{
-              position: "absolute",
-              top: 0,
-              left: 45,
-              margin: 4,
-              backgroundColor: "#ff0000",
-              fontWeight: "bold",
-              fontSize: "12px",
-              padding: "6px 12px",
-              "&:hover": {
-                backgroundColor: "#cc0000",
-              },
-            }}
-          >
-            Cerrar Sesión
-          </Button> */}
-          <Box
-            sx={{
-              width: "100%",
-              display: "flex",
-              justifyContent: "flex-start",
-              alignItems: "center",
-              marginBottom: 2,
-            }}
-          >
+           {/* Navbar Superior */}
+           <Box sx={{
+            width: "100%", 
+            display: "flex", 
+            justifyContent: "space-between", 
+            alignItems: "center", 
+            padding: "20px 20px", 
+            position: "fixed", 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            zIndex: 10, 
+            backgroundColor: "#355d75", 
+            boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
+          }}>
+            {/* Buscador (lado izquierdo) */}
+            <Box sx={{ flexGrow: 1, paddingLeft: "20px" }}>
             <TextField
               label="Buscar Expediente"
               variant="outlined"
@@ -364,6 +320,43 @@ const PendientesPage = () => {
                 style: { marginLeft: "30px" },
               }}
             />
+            </Box>
+            {/* Nombre Completo e Icono de Usuario (lado derecho) */}
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Typography variant="h6" sx={{ fontWeight: "bold", marginRight: 1 }}>
+                {nombreCompleto}
+              </Typography>
+              <IconButton onClick={handleMenu} color="inherit">
+                <AccountCircle fontSize="large" />
+              </IconButton>
+            </Box>
+          </Box>
+          {/* Menu desplegable */}
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleCloseMenu}
+            anchorOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+          >
+            <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
+          </Menu>
+          <Box
+            sx={{
+              //marginTop: "100px",
+              width: "100%",
+              display: "flex",
+              justifyContent: "flex-start",
+              alignItems: "center",
+              marginBottom: 2,
+            }}
+          >
           </Box>
           <StateButtons
             buttonSize="medium"
@@ -374,12 +367,10 @@ const PendientesPage = () => {
               fontWeight: "bold",
             }}
           />
-
           <Box
             sx={{
               width: "100%",
               height: "50vh",
-              //overflowY: "auto",
               marginTop: 8,
             }}
           >
@@ -413,7 +404,7 @@ const PendientesPage = () => {
                 },
                 pagination: {
                   style: {
-                    backgroundColor: "#e8e8e8", // Color gris para la paginación
+                    backgroundColor: "#d3d3d3", // Color gris para la paginación
                     fontSize: "15px", // Tamaño de la fuente de la paginación 
                     height: "5px",
                   },
@@ -428,6 +419,7 @@ const PendientesPage = () => {
             />
           </Box>
         </Box>
+        
         <Button
           variant="contained"
           onClick={handleReportePendientes} // Función que manejará el evento al hacer clic en el botón
@@ -443,8 +435,7 @@ const PendientesPage = () => {
         >
           Generar reporte
         </Button>
-      </Container>
-
+ 
       <Dialog
         open={openVisualizar}
         onClose={handleCloseVisualizar}
@@ -516,8 +507,10 @@ const PendientesPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      </Container>
     </div>
   );
 };
+
 
 export default PendientesPage;

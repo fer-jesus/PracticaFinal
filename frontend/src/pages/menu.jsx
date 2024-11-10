@@ -1,28 +1,20 @@
 import { Container, Box, Typography, IconButton, Menu, MenuItem } from "@mui/material";
 import AccountCircle from "@mui/icons-material/AccountCircle";
-import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState, useContext } from "react";
 import StateButtons from "../components/StateButtons";
+import { UserContext } from "../components/UserContext";
+import { useNavigate } from "react-router-dom";
 import "../styles/menu.css";
 import eduSuperior from "../assets/EduSuperior.png";
 
 const MenuPage = () => {
-  const navigate = useNavigate();
-  const [nombreCompleto, setNombreCompleto] = useState("");
+  const { nombreCompleto, logoutUser } = useContext(UserContext);
   const [anchorEl, setAnchorEl] = useState(null);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    // Recupera el nombre de usuario de localStorage
-    const nombres = localStorage.getItem("nombres");
-    const apellidos = localStorage.getItem("apellidos");
-    if (nombres && apellidos) {
-      setNombreCompleto(`${nombres} ${apellidos}`);
-    }
-  }, []);
-
+ 
   const handleLogout = () => {
-    localStorage.removeItem("nombres");
-    localStorage.removeItem("apellidos");
+    logoutUser();
     navigate("/login"); // Redirige a la página de login
   };
 
@@ -75,8 +67,6 @@ const MenuPage = () => {
           >
             <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
           </Menu>
-
-          {/* <Typography variant="h3" sx={{ marginBottom: 2 }}>Elija el estado</Typography> */}
           <StateButtons
             buttonSize="large"
             buttonStyle={{

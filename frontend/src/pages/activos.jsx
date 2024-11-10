@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useContext, useState, useEffect } from "react";
 import {
   Container,
   Box,
@@ -33,6 +33,7 @@ import { useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
 import AccountCircle from "@mui/icons-material/AccountCircle";
+import { UserContext } from "../components/UserContext";
 import axios from "axios";
 import StateButtons from "../components/StateButtons";
 import "../styles/estados.css";
@@ -50,7 +51,7 @@ const ActivosPage = () => {
   const [openCambiarEstado, setOpenCambiarEstado] = useState(false);
   const [nuevoEstado, setNuevoEstado] = useState("");
   const [folderToChange, setFolderToChange] = useState(null);
-  const [nombreCompleto, setNombreCompleto] = useState("");
+  const { nombreCompleto } = useContext(UserContext);
   const [anchorEl, setAnchorEl] = useState(null);
 
   // Función para obtener las carpetas de la base de datos
@@ -68,24 +69,16 @@ const ActivosPage = () => {
   };
   // Llama a fetchFolders cuando el componente se monte
   useEffect(() => {
-    const nombres = localStorage.getItem("nombres");
-    const apellidos = localStorage.getItem("apellidos");
-    if (nombres && apellidos) {
-      setNombreCompleto(`${nombres} ${apellidos}`);
-    }
     fetchFolders();
   }, []);
 
-   // Función para manejar la apertura del menú
-   const handleMenu = (event) => {
+  // Función para manejar la apertura del menú
+  const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
   // Función para cerrar el menú
   const handleCloseMenu = () => {
-    localStorage.removeItem("nombreUsuario");
-    localStorage.removeItem("nombres");
-    localStorage.removeItem("apellidos");
     setAnchorEl(null);
   };
 
@@ -283,6 +276,31 @@ const ActivosPage = () => {
     } catch (error) {
       console.error("Error al abrir el archivo:", error);
       alert("Error al abrir el archivo.");
+    }
+  };
+
+  const handleDeleteFile = async (file) => {
+    try {
+      const pathSimple = localStorage.getItem("pathAbsoluto");
+      let pathAbsoluto = pathSimple.replace(/\\/g, "/"); // Ajusta las barras invertidas para evitar problemas de rutas en el servidor
+
+      // Hacer la solicitud POST al backend para eliminar el archivo
+      await axios.post("http://localhost:3000/deleteFile", {
+        path: pathAbsoluto,
+        fileName: file,
+      });
+
+      // Actualizar la lista de archivos después de eliminar
+      setSelectedFiles((prevFiles) => prevFiles.filter((f) => f !== file));
+      //alert("Archivo eliminado exitosamente.");
+      await Swal.fire({
+        icon: "success",
+        title: "Archivo eliminado",
+        text: "El archivo ha sido eliminado.",
+      });
+    } catch (error) {
+      console.error("Error al eliminar el archivo:", error);
+      alert("Error al eliminar el archivo.");
     }
   };
 
@@ -486,7 +504,7 @@ const ActivosPage = () => {
 
   return (
     <div className="activo-container">
-      <Container sx={{ paddingTop: 4, height: "100vh" }}>
+      <Container sx={{ paddingTop: "80px", height: "100vh" }}>
         <Box
           sx={{
             display: "flex",
@@ -495,16 +513,61 @@ const ActivosPage = () => {
             alignItems: "center",
           }}
         >
-          {/* Mostrar el nombre completo con el ícono de usuario */}
-          <Box sx={{ position: "absolute", top: 16, right: 16, display: "flex", alignItems: "center" }}>
-            <Typography variant="h6" sx={{ fontWeight: "bold", marginRight: 1 }}>
-              {nombreCompleto}
-            </Typography>
-            <IconButton onClick={handleMenu} color="inherit">
-              <AccountCircle fontSize="large" />
-            </IconButton>
+          {/* Navbar Superior */}
+          <Box
+            sx={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "20px 20px",
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 10,
+              backgroundColor: "#355d75",
+              boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+            }}
+          >
+            {/* Buscador (lado izquierdo) */}
+            <Box sx={{ flexGrow: 1, paddingLeft: "20px" }}>
+              <TextField
+                label="Buscar Expediente"
+                variant="outlined"
+                size="small"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                sx={{
+                  width: "250px",
+                  backgroundColor: "#F5F5F5",
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search />
+                    </InputAdornment>
+                  ),
+                }}
+                InputLabelProps={{
+                  shrink: Boolean(searchQuery),
+                  style: { marginLeft: "30px" },
+                }}
+              />
+            </Box>
+            {/* Nombre Completo e Icono de Usuario (lado derecho) */}
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: "bold", marginRight: 1 }}
+              >
+                {nombreCompleto}
+              </Typography>
+              <IconButton onClick={handleMenu} color="inherit">
+                <AccountCircle fontSize="large" />
+              </IconButton>
+            </Box>
           </Box>
-
           {/* Menu desplegable */}
           <Menu
             anchorEl={anchorEl}
@@ -521,58 +584,16 @@ const ActivosPage = () => {
           >
             <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
           </Menu>
-          {/* <Button
-            variant="contained"
-            //color="secondary"
-            onClick={handleLogout}
-            sx={{
-              position: "absolute",
-              top: 0,
-              left: 45,
-              margin: 4,
-              backgroundColor: "#ff0000",
-              fontWeight: "bold",
-              fontSize: "12px",
-              padding: "6px 12px",
-              "&:hover": {
-                backgroundColor: "#cc0000",
-              },
-            }}
-          >
-            Cerrar Sesión
-          </Button> */}
           <Box
             sx={{
+              //marginTop: "100px",
               width: "100%",
               display: "flex",
               justifyContent: "flex-start",
               alignItems: "center",
               marginBottom: 2,
             }}
-          >
-            <TextField
-              label="Buscar Expediente"
-              variant="outlined"
-              size="small"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              sx={{
-                width: "250px",
-                backgroundColor: "#F5F5F5",
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search />
-                  </InputAdornment>
-                ),
-              }}
-              InputLabelProps={{
-                shrink: Boolean(searchQuery),
-                style: { marginLeft: "30px" },
-              }}
-            />
-          </Box>
+          ></Box>
           <StateButtons
             buttonSize="medium"
             buttonStyle={{
@@ -601,7 +622,6 @@ const ActivosPage = () => {
             Nuevo
           </Button>
           <Box
-            //className="data-table-container" 
             sx={{
               width: "100%",
               height: "50vh",
@@ -639,8 +659,8 @@ const ActivosPage = () => {
                 },
                 pagination: {
                   style: {
-                    backgroundColor: "#e8e8e8", // Color gris para la paginación
-                    fontSize: "15px", // Tamaño de la fuente de la paginación 
+                    backgroundColor: "#d3d3d3", // Color gris para la paginación
+                    fontSize: "15px", // Tamaño de la fuente de la paginación
                     height: "5px",
                   },
                 },
@@ -668,7 +688,6 @@ const ActivosPage = () => {
             "&:hover": {
               backgroundColor: "#FFED38",
               // backgroundColor: "#3F9BBF" #4A646C,
-
             },
           }}
         >
@@ -726,13 +745,22 @@ const ActivosPage = () => {
                       <TableRow key={index}>
                         <TableCell>{file}</TableCell>
                         <TableCell>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => handleOpenFile(file)}
-                          >
-                            Abrir
-                          </Button>
+                          <Box display="flex" gap={1}>
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => handleOpenFile(file)}
+                            >
+                              Abrir
+                            </Button>
+                            <Button
+                              variant="contained"
+                              color="secondary"
+                              onClick={() => handleDeleteFile(file)}
+                            >
+                              Eliminar
+                            </Button>
+                          </Box>
                         </TableCell>
                       </TableRow>
                     ))}

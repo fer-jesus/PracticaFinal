@@ -14,7 +14,7 @@
     width: 100%; /* Asegura que ocupe toda la anchura */
     padding: 20px; /* Añade un poco de espacio interno */
     box-sizing: border-box;
-    background: #355d75;
+    background: #e7e7e7;
     background-size: cover;
 }
 
@@ -22,34 +22,3 @@
     z-index: 2100 !important; /* Establecer un z-index mayor al del Dialog */
   }
 
-  /* Opcional: si quieres agregar un poco de margen para evitar que los contenidos toquen los bordes de la ventana */
-.container-content {
-    width: 100%;
-    max-width: 1200px; /* O lo que necesites */
-    margin: 0 auto;
-}
-
-/* Si tienes un contenedor específico para los elementos dentro de estas secciones */
-.element-container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px; /* Espacio entre los elementos */
-    width: 100%;
-}
-
-/* Para evitar distorsión en el header (nombre completo y buscador) */
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 10px;
-}
-
-.header .user-info {
-    margin-right: 20px; /* Añade espacio a la derecha si es necesario */
-}
-
-.header .search-bar {
-    flex-grow: 1; /* Para que el buscador ocupe todo el espacio disponible */
-}

@@ -307,22 +307,53 @@ app.get("/filesOpen/:fileName", (req, res) => {
     return res.status(400).json({ error: "Path no configurado" });
   }
 
-  // Construye la ruta completa del archivo
   const filePath = path.join(pathFrontend, fileName);
 
-  // Verifica si el archivo existe
+  // Verificar si el archivo existe
   if (fs.existsSync(filePath)) {
-    // Envia el archivo al cliente
-    res.sendFile(filePath, (err) => {
-      if (err) {
-        console.error("Error al abrir el archivo:", err);
-        return res.status(500).json({ error: "Error al abrir el archivo" });
+    // Establece el encabezado para archivos PDF
+    res.setHeader("Content-Type", "application/pdf");
+
+    // Transmite el archivo usando un flujo
+    const readStream = fs.createReadStream(filePath);
+    
+    readStream.pipe(res);
+
+    // Manejo de errores en el flujo
+    readStream.on("error", (err) => {
+      console.error("Error al abrir el archivo:", err);
+      if (!res.headersSent) {
+        res.status(500).json({ error: "Error al abrir el archivo" });
       }
     });
+
+    // Cierra el flujo si el cliente cancela la solicitud
+    req.on("close", () => {
+      readStream.destroy();
+    });
   } else {
-    return res.status(404).json({ error: "Archivo no encontrado" });
+    res.status(404).json({ error: "Archivo no encontrado" });
   }
 });
+
+// Ruta para eliminar archivos de una carpeta específica
+app.post("/deleteFile", (req, res) => {
+  const { path, fileName } = req.body;
+  if (!path || !fileName) {
+    return res.status(400).json({ error: "Ruta o nombre de archivo faltante" });
+  }
+
+  const filePath = `${path}/${fileName}`; // Concatenamos la ruta y el nombre del archivo
+
+  fs.unlink(filePath, (err) => {
+    if (err) {
+      console.error("Error al eliminar el archivo:", err);
+      return res.status(500).json({ error: "Error al eliminar el archivo" });
+    }
+    res.status(200).json({ message: "Archivo eliminado exitosamente" });
+  });
+});
+
 
 // Ruta para cambiar el estado de una carpeta version
 app.put("/cambiarEstado", (req, res) => {
@@ -562,6 +593,10 @@ app.delete("/delete-folder", (req, res) => {
 app.get("/reporte-estados/:estado", (req, res) => {
   const { estado } = req.params;
   const { usuario } = req.query;
+
+  if (!usuario) {
+    return res.status(400).json({ error: "Usuario no proporcionado en la consulta" });
+  }
 
   const query = `
     SELECT C.Id_carpeta, C.Nombre_expediente, C.Fecha_creación, CE.Fecha_cambioEstado, C.Descripción

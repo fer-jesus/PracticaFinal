@@ -23,6 +23,7 @@ import { UserContext } from "../components/UserContext";
 //import logoUSAC from "../assets/Usac_logo.png";
 
 const LoginPage = () => {
+  const { loginUser } = useContext(UserContext);
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +31,6 @@ const LoginPage = () => {
   const [errorPassword, setErrorPassword] = useState(false);
   const passwordRef = useRef(null);
   const navigate = useNavigate();
-  const { loginUser } = useContext(UserContext);
 
   const handleLogin = async () => {
     // Validar si el  usuario o contraseña con correctos
@@ -51,6 +51,8 @@ const LoginPage = () => {
 
         const { nombres, apellidos } = response.data;
         loginUser(nombres, apellidos); // Actualiza el contexto con el nombre del usuario
+        
+        localStorage.setItem("nombreUsuario", user);
         
         navigate("/menu");
       }

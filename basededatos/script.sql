@@ -11,16 +11,15 @@ CREATE TABLE IF NOT EXISTS  USUARIO (
     Direccion VARCHAR(45) NOT NULL,
     Rol VARCHAR(25) NOT NULL, 
     NombreUsuario VARCHAR(25) UNIQUE NOT NULL,
-    Contraseña VARCHAR(255) NOT NULL,
-    SessionToken VARCHAR(255) DEFAULT NULL
+    Contraseña VARCHAR(255) NOT NULL
     );
     -- ROL 1: SECRETARIA  -- ROL 2: PRACTICANTE
 
 CREATE TABLE IF NOT EXISTS CARPETA (
     Id_carpeta INT AUTO_INCREMENT PRIMARY KEY,
-    Nombre_expediente VARCHAR(60) NOT NULL,
+    Nombre_expediente VARCHAR(75) NOT NULL,
     Fecha_creación TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    Descripción VARCHAR(60),
+    Descripción VARCHAR(75),
     RutaExpediente VARCHAR(255) UNIQUE NOT NULL
       );
  
